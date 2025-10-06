@@ -1,5 +1,5 @@
 
-import 'package:expensemate/features/budget/create_budget.dart';
+import 'package:expensemate/features/budget/screens/create_budget.dart';
 import 'package:expensemate/features/budget/screens/budget_list.dart';
 import 'package:expensemate/features/home/home_page.dart';
 import 'package:flutter/material.dart';
