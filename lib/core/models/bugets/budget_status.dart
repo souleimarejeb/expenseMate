@@ -1,0 +1,1 @@
+enum BudgetStatus { ok, nearLimit, exceeded }
