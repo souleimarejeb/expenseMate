@@ -30,8 +30,49 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-         title: Text('ExpenseMate', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF1565C0), // Modern blue background
+        elevation: 2,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(
+              Icons.menu,
+              color: Colors.white,
+              size: 28,
+            ),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+            tooltip: 'Open menu',
+          ),
+        ),
+        title: Text(
+          'ExpenseMate',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.notifications_outlined,
+              color: Colors.white,
+              size: 24,
+            ),
+            onPressed: () {
+              // Handle notifications
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.account_circle_outlined,
+              color: Colors.white,
+              size: 24,
+            ),
+            onPressed: () {
+              // Handle profile
+            },
+          ),
+        ],
       ),
        drawer: AppDrawer(),
       body: SafeArea(
@@ -42,8 +83,16 @@ class _HomePageState extends State<HomePage> {
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(20))),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF1565C0), // Match AppBar color
+                    const Color(0xFF1976D2), // Slightly lighter blue
+                  ],
+                ),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+              ),
               padding: EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

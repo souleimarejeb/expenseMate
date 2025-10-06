@@ -2,6 +2,8 @@
 import 'package:expensemate/features/budget/screens/create_budget.dart';
 import 'package:expensemate/features/budget/screens/budget_list.dart';
 import 'package:expensemate/features/home/home_page.dart';
+import 'package:expensemate/features/expenses_management/screens/expense_list_screen.dart';
+import 'package:expensemate/features/expenses_management/screens/add_edit_expense_screen.dart';
 import 'package:flutter/material.dart';
 
 
@@ -10,7 +12,8 @@ class AppRoutes {
   static const String home = '/';
   static const String createBudget = '/createBudget';
   static const String budgetList = '/budgetList';
-
+  static const String expenses = '/expenses';
+  static const String addExpense = '/addExpense';
   static const String profile = '/profile';
 
   // Route generator
@@ -22,6 +25,10 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => CreateBudgetPage());
       case budgetList:
         return MaterialPageRoute(builder: (_) => AllBudgetsPage());
+      case expenses:
+        return MaterialPageRoute(builder: (_) => const ExpenseListScreen());
+      case addExpense:
+        return MaterialPageRoute(builder: (_) => const AddEditExpenseScreen());
       case profile:
         return MaterialPageRoute(builder: (_) => Placeholder());
       default:
