@@ -31,7 +31,7 @@ class AppDrawer extends StatelessWidget {
             leading: Icon(Icons.wallet, color: Colors.black),
             title: Text('budgets'),
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.budgetList);
               // Navigate to Home
             },
            
@@ -40,7 +40,7 @@ class AppDrawer extends StatelessWidget {
             leading: Icon(Icons.attach_money_sharp, color: Colors.black),
             title: Text('expenses'),
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.createBudget);
+              Navigator.pop(context);
               // Navigate to Home
             },
             ),
