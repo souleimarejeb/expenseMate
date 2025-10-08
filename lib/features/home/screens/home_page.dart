@@ -1,4 +1,3 @@
-import 'package:expensemate/features/home/app_drawer.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -33,7 +32,6 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.black,
          title: Text('ExpenseMate', style: TextStyle(color: Colors.white)),
       ),
-       drawer: AppDrawer(),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,19 +50,6 @@ class _HomePageState extends State<HomePage> {
                   SizedBox(height: 5),
                   Text("\$${totalAmount.toStringAsFixed(2)}",
                       style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 20),
-                  Container(
-                    padding: EdgeInsets.all(5),
-                    decoration: BoxDecoration(color: Colors.white),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        prefixIcon: Icon(Icons.search, color: Colors.black),
-                        hintText: "Search transactions",
-                        hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -156,6 +141,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-    );
+);
   }
 }

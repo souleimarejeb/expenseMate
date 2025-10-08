@@ -1,3 +1,4 @@
+import 'package:expensemate/features/widgets/main_layout.dart';
 import 'package:expensemate/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +18,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
  ),
       initialRoute: AppRoutes.home,
-      onGenerateRoute: AppRoutes.generateRoute, 
+      onGenerateRoute: AppRoutes.generateRoute,
+       home: const MainLayout(), 
     );
   }
 }
