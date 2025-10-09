@@ -26,7 +26,7 @@ class DatabaseHelper {
     // Open/create the database
     return await openDatabase(
       path,
-      version: 2, // Increased version for new tables
+      version: 3, // Increased version for user tables
       onCreate: _createDb,
       onUpgrade: _upgradeDb,
     );
@@ -105,6 +105,54 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX idx_expenses_date ON expenses(date)');
     await db.execute('CREATE INDEX idx_expenses_category ON expenses(categoryId)');
     await db.execute('CREATE INDEX idx_recurring_next_due ON recurring_expenses(nextDueDate)');
+
+    // Create users table
+    await db.execute('''
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        firstName TEXT NOT NULL,
+        lastName TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        phone TEXT,
+        avatarPath TEXT,
+        dateOfBirth INTEGER,
+        bio TEXT,
+        occupation TEXT,
+        monthlyIncome REAL,
+        currency TEXT DEFAULT 'USD',
+        createdAt INTEGER NOT NULL,
+        updatedAt INTEGER NOT NULL,
+        isActive INTEGER DEFAULT 1,
+        preferences TEXT
+      )
+    ''');
+
+    // Create user preferences table
+    await db.execute('''
+      CREATE TABLE user_preferences (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        theme TEXT DEFAULT 'system',
+        language TEXT DEFAULT 'en',
+        currency TEXT DEFAULT 'USD',
+        enableNotifications INTEGER DEFAULT 1,
+        enableBiometric INTEGER DEFAULT 0,
+        enableBackup INTEGER DEFAULT 1,
+        enableAnalytics INTEGER DEFAULT 1,
+        dateFormat TEXT DEFAULT 'MM/dd/yyyy',
+        timeFormat TEXT DEFAULT '12h',
+        categoryVisibility TEXT DEFAULT '{}',
+        dashboardLayout TEXT DEFAULT '{}',
+        favoriteCategories TEXT DEFAULT '[]',
+        budgetAlertThreshold REAL DEFAULT 0.8,
+        FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
+      )
+    ''');
+
+    // Create indexes for users
+    await db.execute('CREATE INDEX idx_users_email ON users (email)');
+    await db.execute('CREATE INDEX idx_users_active ON users (isActive)');
+    await db.execute('CREATE INDEX idx_preferences_user ON user_preferences (userId)');
   }
 
   Future<void> _upgradeDb(Database db, int oldVersion, int newVersion) async {
@@ -168,6 +216,54 @@ class DatabaseHelper {
       await db.execute('CREATE INDEX idx_expenses_date ON expenses(date)');
       await db.execute('CREATE INDEX idx_expenses_category ON expenses(categoryId)');
       await db.execute('CREATE INDEX idx_recurring_next_due ON recurring_expenses(nextDueDate)');
+    }
+
+    if (oldVersion < 3) {
+      // Add user-related tables for version 3
+      await db.execute('''
+        CREATE TABLE users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          firstName TEXT NOT NULL,
+          lastName TEXT NOT NULL,
+          email TEXT NOT NULL UNIQUE,
+          phone TEXT,
+          avatarPath TEXT,
+          dateOfBirth INTEGER,
+          bio TEXT,
+          occupation TEXT,
+          monthlyIncome REAL,
+          currency TEXT DEFAULT 'USD',
+          createdAt INTEGER NOT NULL,
+          updatedAt INTEGER NOT NULL,
+          isActive INTEGER DEFAULT 1,
+          preferences TEXT
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE user_preferences (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          userId INTEGER NOT NULL,
+          theme TEXT DEFAULT 'system',
+          language TEXT DEFAULT 'en',
+          currency TEXT DEFAULT 'USD',
+          enableNotifications INTEGER DEFAULT 1,
+          enableBiometric INTEGER DEFAULT 0,
+          enableBackup INTEGER DEFAULT 1,
+          enableAnalytics INTEGER DEFAULT 1,
+          dateFormat TEXT DEFAULT 'MM/dd/yyyy',
+          timeFormat TEXT DEFAULT '12h',
+          categoryVisibility TEXT DEFAULT '{}',
+          dashboardLayout TEXT DEFAULT '{}',
+          favoriteCategories TEXT DEFAULT '[]',
+          budgetAlertThreshold REAL DEFAULT 0.8,
+          FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute('CREATE INDEX idx_users_email ON users (email)');
+      await db.execute('CREATE INDEX idx_users_active ON users (isActive)');
+      await db.execute('CREATE INDEX idx_preferences_user ON user_preferences (userId)');
     }
   }
 

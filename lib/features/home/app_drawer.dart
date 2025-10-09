@@ -1,6 +1,8 @@
 // app_drawer.dart
 import 'package:expensemate/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../user/providers/user_provider.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({Key? key}) : super(key: key);
@@ -96,7 +98,10 @@ class AppDrawer extends StatelessWidget {
             context,
             icon: Icons.account_circle,
             title: 'Profile',
-            onTap: () {},
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.profile);
+            },
             color: const Color(0xFF455A64),
           ),
           _buildDrawerItem(
@@ -105,6 +110,25 @@ class AppDrawer extends StatelessWidget {
             title: 'Settings',
             onTap: () {},
             color: const Color(0xFF455A64),
+          ),
+          Divider(color: Colors.grey[300], thickness: 1),
+          Consumer<UserProvider>(
+            builder: (context, userProvider, child) {
+              return _buildDrawerItem(
+                context,
+                icon: userProvider.isAuthenticated ? Icons.logout : Icons.login,
+                title: userProvider.isAuthenticated ? 'Logout' : 'Login',
+                onTap: () {
+                  Navigator.pop(context);
+                  if (userProvider.isAuthenticated) {
+                    userProvider.logoutUser();
+                  } else {
+                    Navigator.pushNamed(context, AppRoutes.login);
+                  }
+                },
+                color: userProvider.isAuthenticated ? Colors.red : Colors.green,
+              );
+            },
           ),
         ],
       ),

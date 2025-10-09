@@ -4,6 +4,12 @@ import 'package:expensemate/features/budget/screens/budget_list.dart';
 import 'package:expensemate/features/home/home_page.dart';
 import 'package:expensemate/features/expenses_management/screens/expense_list_screen.dart';
 import 'package:expensemate/features/expenses_management/screens/add_edit_expense_screen.dart';
+import 'package:expensemate/features/user/screens/user_profile_screen.dart';
+import 'package:expensemate/features/user/screens/edit_profile_screen.dart';
+import 'package:expensemate/features/user/screens/user_settings_screen.dart';
+import 'package:expensemate/features/user/screens/user_statistics_screen.dart';
+import 'package:expensemate/features/user/screens/user_login_screen.dart';
+import 'package:expensemate/features/user/screens/registration_screen.dart';
 import 'package:flutter/material.dart';
 
 
@@ -15,6 +21,11 @@ class AppRoutes {
   static const String expenses = '/expenses';
   static const String addExpense = '/addExpense';
   static const String profile = '/profile';
+  static const String editProfile = '/editProfile';
+  static const String userSettings = '/userSettings';
+  static const String userStatistics = '/userStatistics';
+  static const String login = '/login';
+  static const String register = '/register';
 
   // Route generator
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -30,7 +41,17 @@ class AppRoutes {
       case addExpense:
         return MaterialPageRoute(builder: (_) => const AddEditExpenseScreen());
       case profile:
-        return MaterialPageRoute(builder: (_) => Placeholder());
+        return MaterialPageRoute(builder: (_) => const UserProfileScreen());
+      case editProfile:
+        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
+      case userSettings:
+        return MaterialPageRoute(builder: (_) => const UserSettingsScreen());
+      case userStatistics:
+        return MaterialPageRoute(builder: (_) => const UserStatisticsScreen());
+      case login:
+        return MaterialPageRoute(builder: (_) => const UserLoginScreen());
+      case register:
+        return MaterialPageRoute(builder: (_) => const RegistrationScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
