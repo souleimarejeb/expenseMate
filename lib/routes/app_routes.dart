@@ -4,12 +4,9 @@ import 'package:expensemate/features/budget/screens/budget_list.dart';
 import 'package:expensemate/features/home/home_page.dart';
 import 'package:expensemate/features/expenses_management/screens/expense_list_screen.dart';
 import 'package:expensemate/features/expenses_management/screens/add_edit_expense_screen.dart';
-import 'package:expensemate/features/user/screens/user_profile_screen.dart';
+import 'package:expensemate/features/user/screens/simple_profile_screen.dart';
 import 'package:expensemate/features/user/screens/edit_profile_screen.dart';
-import 'package:expensemate/features/user/screens/user_settings_screen.dart';
-import 'package:expensemate/features/user/screens/user_statistics_screen.dart';
-import 'package:expensemate/features/user/screens/user_login_screen.dart';
-import 'package:expensemate/features/user/screens/registration_screen.dart';
+import 'package:expensemate/features/user/screens/simple_login_screen.dart';
 import 'package:flutter/material.dart';
 
 
@@ -41,17 +38,11 @@ class AppRoutes {
       case addExpense:
         return MaterialPageRoute(builder: (_) => const AddEditExpenseScreen());
       case profile:
-        return MaterialPageRoute(builder: (_) => const UserProfileScreen());
+        return MaterialPageRoute(builder: (_) => const SimpleProfileScreen());
       case editProfile:
         return MaterialPageRoute(builder: (_) => const EditProfileScreen());
-      case userSettings:
-        return MaterialPageRoute(builder: (_) => const UserSettingsScreen());
-      case userStatistics:
-        return MaterialPageRoute(builder: (_) => const UserStatisticsScreen());
       case login:
-        return MaterialPageRoute(builder: (_) => const UserLoginScreen());
-      case register:
-        return MaterialPageRoute(builder: (_) => const RegistrationScreen());
+        return MaterialPageRoute(builder: (_) => const SimpleLoginScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

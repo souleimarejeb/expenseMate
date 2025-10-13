@@ -27,7 +27,8 @@ class _UserProfileScreenState extends State<UserProfileScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _loadUserStatistics();
+    // Load statistics after the build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadUserStatistics());
   }
 
   @override
@@ -37,6 +38,8 @@ class _UserProfileScreenState extends State<UserProfileScreen>
   }
 
   Future<void> _loadUserStatistics() async {
+    if (!mounted) return;
+    
     setState(() {
       _isLoadingStats = true;
     });
@@ -44,10 +47,12 @@ class _UserProfileScreenState extends State<UserProfileScreen>
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (userProvider.currentUser != null) {
       final stats = await userProvider.getUserStatistics(userProvider.currentUser!.id!);
-      setState(() {
-        _userStats = stats;
-        _isLoadingStats = false;
-      });
+      if (mounted) {
+        setState(() {
+          _userStats = stats;
+          _isLoadingStats = false;
+        });
+      }
     } else {
       setState(() {
         _isLoadingStats = false;

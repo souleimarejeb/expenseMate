@@ -2,7 +2,6 @@ import 'package:expensemate/features/home/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../user/providers/user_provider.dart';
-import '../user/models/user_model.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -65,44 +64,24 @@ class _HomePageState extends State<HomePage> {
               // Handle notifications
             },
           ),
-          IconButton(
-            icon: Icon(
-              Icons.account_circle_outlined,
-              color: Colors.white,
-              size: 24,
-            ),
-            onPressed: () async {
-              // Test user CRUD operations
-              final userProvider = Provider.of<UserProvider>(context, listen: false);
-              
-              final testUser = UserModel(
-                firstName: 'Test',
-                lastName: 'User',
-                email: 'test${DateTime.now().millisecondsSinceEpoch}@example.com',
-                phone: '+1234567890',
-                bio: 'Test user for CRUD verification',
-                occupation: 'Tester',
-                monthlyIncome: 1000.0,
-              );
-              
-              print('Creating test user...');
-              final success = await userProvider.createUser(testUser);
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    success 
-                      ? 'Test user created successfully! Total users: ${userProvider.users.length}'
-                      : 'Failed to create user: ${userProvider.error}',
-                  ),
-                  backgroundColor: success ? Colors.green : Colors.red,
+          Consumer<UserProvider>(
+            builder: (context, userProvider, child) {
+              return IconButton(
+                icon: Icon(
+                  userProvider.isAuthenticated 
+                    ? Icons.account_circle 
+                    : Icons.account_circle_outlined,
+                  color: Colors.white,
+                  size: 24,
                 ),
+                onPressed: () {
+                  if (userProvider.isAuthenticated) {
+                    Navigator.pushNamed(context, '/profile');
+                  } else {
+                    Navigator.pushNamed(context, '/login');
+                  }
+                },
               );
-              
-              if (success) {
-                print('User created: ${userProvider.currentUser?.firstName}');
-                print('Total users in database: ${userProvider.users.length}');
-              }
             },
           ),
         ],

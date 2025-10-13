@@ -219,11 +219,15 @@ class UserProvider with ChangeNotifier {
   // Get user statistics
   Future<Map<String, dynamic>> getUserStatistics(int userId) async {
     try {
-      _setError(null);
       return await UserService.getUserStatistics(userId);
     } catch (e) {
-      _setError('Error getting user statistics: ${e.toString()}');
-      return {};
+      print('Error getting user statistics: ${e.toString()}');
+      return {
+        'totalExpenses': 0.0,
+        'monthlyBudget': 0.0,
+        'totalIncome': _currentUser?.monthlyIncome ?? 0.0,
+        'expenseCount': 0,
+      };
     }
   }
 
