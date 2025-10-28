@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:expensemate/features/home/screens/home_page.dart';
+import 'package:expensemate/features/category/CategoryPage.dart';
 import 'package:expensemate/features/budget/screens/budget_list.dart';
 
 
@@ -18,7 +19,7 @@ class _MainLayoutState extends State<MainLayout> {
     HomePage(),
     AllBudgetsPage(),
     Placeholder(),
-    Placeholder(),
+    CategoryPage(),
     const Placeholder(),
   ];
 
