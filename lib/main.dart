@@ -2,7 +2,7 @@ import 'package:expensemate/routes/app_routes.dart';
 import 'package:expensemate/features/expenses_management/providers/expense_provider.dart';
 import 'package:expensemate/features/user/providers/user_provider.dart';
 import 'package:expensemate/features/user/providers/user_preferences_provider.dart';
-import 'package:expensemate/features/home/home_page.dart';
+import 'package:expensemate/features/widgets/main_layout.dart';
 import 'package:expensemate/features/user/screens/simple_login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -71,7 +71,7 @@ class MyApp extends StatelessWidget {
         home: Consumer<UserProvider>(
           builder: (context, userProvider, child) {
             if (userProvider.isAuthenticated) {
-              return HomePage();
+              return MainLayout();
             } else {
               return const SimpleLoginScreen();
             }

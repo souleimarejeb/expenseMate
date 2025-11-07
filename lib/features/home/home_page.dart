@@ -1,7 +1,4 @@
-import 'package:expensemate/features/home/app_drawer.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../user/providers/user_provider.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -34,17 +31,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1565C0), // Modern blue background
         elevation: 2,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(
-              Icons.menu,
-              color: Colors.white,
-              size: 28,
-            ),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-            tooltip: 'Open menu',
-          ),
-        ),
+        automaticallyImplyLeading: false,
         title: Text(
           'ExpenseMate',
           style: TextStyle(
@@ -64,29 +51,9 @@ class _HomePageState extends State<HomePage> {
               // Handle notifications
             },
           ),
-          Consumer<UserProvider>(
-            builder: (context, userProvider, child) {
-              return IconButton(
-                icon: Icon(
-                  userProvider.isAuthenticated 
-                    ? Icons.account_circle 
-                    : Icons.account_circle_outlined,
-                  color: Colors.white,
-                  size: 24,
-                ),
-                onPressed: () {
-                  if (userProvider.isAuthenticated) {
-                    Navigator.pushNamed(context, '/profile');
-                  } else {
-                    Navigator.pushNamed(context, '/login');
-                  }
-                },
-              );
-            },
-          ),
+          SizedBox(width: 8), // Spacing for better layout
         ],
       ),
-       drawer: AppDrawer(),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

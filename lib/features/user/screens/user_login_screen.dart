@@ -365,19 +365,28 @@ class _UserLoginScreenState extends State<UserLoginScreen>
     });
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    userProvider.clearError();
     
-    final demoUser = UserModel(
-      firstName: 'Demo',
-      lastName: 'User',
-      email: 'demo@expensemate.com',
-      phone: '+1 (555) 123-4567',
-      bio: 'Demo user for testing ExpenseMate features',
-      occupation: 'Software Developer',
-      monthlyIncome: 5000.0,
-      dateOfBirth: DateTime(1990, 5, 15),
-    );
+    const demoEmail = 'demo@expensemate.com';
+    
+    // First try to login with existing demo account
+    bool success = await userProvider.loginUser(demoEmail);
+    
+    if (!success) {
+      // If login fails, create the demo account
+      final demoUser = UserModel(
+        firstName: 'Demo',
+        lastName: 'User',
+        email: demoEmail,
+        phone: '+1 (555) 123-4567',
+        bio: 'Demo user for testing ExpenseMate features',
+        occupation: 'Software Developer',
+        monthlyIncome: 5000.0,
+        dateOfBirth: DateTime(1990, 5, 15),
+      );
 
-    final success = await userProvider.createUser(demoUser);
+      success = await userProvider.createUser(demoUser);
+    }
 
     setState(() {
       _isLoading = false;
@@ -386,7 +395,7 @@ class _UserLoginScreenState extends State<UserLoginScreen>
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Demo account created successfully!'),
+          content: Text('Welcome to ExpenseMate Demo!'),
           backgroundColor: Colors.green,
         ),
       );

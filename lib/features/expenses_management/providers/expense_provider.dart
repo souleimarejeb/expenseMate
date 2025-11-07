@@ -5,6 +5,8 @@ import '../../../core/models/expense_category.dart';
 import '../../../core/models/recurring_expense.dart';
 import '../../../core/services/expense_service.dart';
 import '../../../core/services/expense_scheduler.dart';
+import '../../../core/services/advanced_analytics_service.dart';
+import '../../../core/services/smart_categorization_service.dart';
 
 class ExpenseProvider extends ChangeNotifier {
   final ExpenseService _expenseService = ExpenseService();

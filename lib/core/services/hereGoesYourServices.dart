@@ -3,7 +3,7 @@ import '../database/databaseHelper.dart';
 import '../models/exempleFilm.dart'; // Import your Film model
 
 class FilmService {
-  final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
 
   // Add a new film
   Future<int> addFilm(Film film) async {

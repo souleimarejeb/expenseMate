@@ -1,5 +1,4 @@
 // user_service.dart
-import 'package:sqflite/sqflite.dart';
 import '../../../core/database/databaseHelper.dart';
 import '../models/user_model.dart';
 import '../models/user_preferences_model.dart';
@@ -9,8 +8,8 @@ class UserService {
   static const String preferencesTableName = 'user_preferences';
 
   // Get database instance from DatabaseHelper
-  static Future<Database> get database async {
-    return await DatabaseHelper.instance.database;
+  static Future<DatabaseHelper> get database async {
+    return DatabaseHelper();
   }
 
   // CRUD Operations for User

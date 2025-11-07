@@ -277,14 +277,22 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     userProvider.clearError();
 
-    final demoUser = UserModel(
-      firstName: 'Demo',
-      lastName: 'User',
-      email: 'demo@expensemate.com',
-      monthlyIncome: 5000.0,
-    );
+    const demoEmail = 'demo@expensemate.com';
+    
+    // First try to login with existing demo account
+    bool success = await userProvider.loginUser(demoEmail);
+    
+    if (!success) {
+      // If login fails, create the demo account
+      final demoUser = UserModel(
+        firstName: 'Demo',
+        lastName: 'User',
+        email: demoEmail,
+        monthlyIncome: 5000.0,
+      );
 
-    final success = await userProvider.createUser(demoUser);
+      success = await userProvider.createUser(demoUser);
+    }
 
     if (mounted) {
       setState(() {
@@ -295,7 +303,7 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
         Navigator.of(context).pushReplacementNamed('/');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Demo account created! Welcome to ExpenseMate'),
+            content: Text('Welcome to ExpenseMate Demo!'),
             backgroundColor: Colors.green,
           ),
         );
