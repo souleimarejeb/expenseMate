@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
             ),
             SizedBox(width: 12),
             Text(
-              'ExpenseMate',
+              'EexpenseMate',
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 24,

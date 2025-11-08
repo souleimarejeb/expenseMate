@@ -1,10 +1,27 @@
 import 'package:expensemate/features/widgets/main_layout.dart';
 import 'package:expensemate/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:expensemate/features/category/CategoryPage.dart';
+import 'package:expensemate/features/category/category_model.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive
+  await Hive.initFlutter();
+
+  // Register the adapter (make sure CategoryAdapter is generated in category_model.g.dart)
+  Hive.registerAdapter(CategoryAdapter());
+
+  // Initialize your Hive service
+  await HiveService.init();
+
+  runApp(MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -14,6 +31,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      
       title: 'Flutter Demo',
       theme: ThemeData(
  ),
