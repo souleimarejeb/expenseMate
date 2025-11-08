@@ -3,10 +3,6 @@ import '../models/expense.dart';
 import '../models/expense_category.dart';
 import '../models/expense_attachment.dart';
 
-import 'local_storage_helper.dart';
-import '../models/expense.dart';
-import '../models/expense_category.dart';
-
 class DatabaseHelper {
   static DatabaseHelper? _instance;
   static LocalStorageHelper get _localStorage => LocalStorageHelper.instance;
@@ -26,8 +22,11 @@ class DatabaseHelper {
     await _localStorage.initialize();
   }
 
-  // SQLite-like methods for compatibility
+  // Local storage methods for compatibility
   Future<int> insert(String table, Map<String, dynamic> values) async {
+    // Ensure initialization before any operation
+    await initDatabase();
+    
     switch (table) {
       case 'expenses':
         final expense = Expense.fromMap(values);
@@ -36,6 +35,14 @@ class DatabaseHelper {
       case 'expense_categories':
         final category = ExpenseCategory.fromMap(values);
         await _localStorage.insertCategory(category);
+        return 1;
+      case 'users':
+        // Store user data in local storage
+        await _localStorage.insertUser(values);
+        return values['id'] ?? 1;
+      case 'user_preferences':
+        // Store user preferences in local storage
+        await _localStorage.insertUserPreferences(values);
         return 1;
       case 'recurring_expenses':
       case 'expense_learning':
@@ -57,6 +64,9 @@ class DatabaseHelper {
     int? limit,
     int? offset,
   }) async {
+    // Ensure initialization before any operation
+    await initDatabase();
+    
     switch (table) {
       case 'expenses':
         final expenses = await _localStorage.getExpenses();
@@ -64,6 +74,25 @@ class DatabaseHelper {
       case 'expense_categories':
         final categories = await _localStorage.getCategories();
         return categories.map((c) => c.toMap()).toList();
+      case 'users':
+        final users = await _localStorage.getUsers();
+        List<Map<String, dynamic>> result = users;
+        
+        // Apply where clause filtering if provided
+        if (where != null && whereArgs != null) {
+          if (where.contains('email = ?')) {
+            final email = whereArgs[0] as String;
+            result = users.where((user) => user['email'] == email).toList();
+          } else if (where.contains('id = ?')) {
+            final id = whereArgs[0] as int;
+            result = users.where((user) => user['id'] == id).toList();
+          }
+        }
+        
+        return result;
+      case 'user_preferences':
+        final preferences = await _localStorage.getUserPreferences();
+        return preferences;
       default:
         return [];
     }
@@ -73,10 +102,19 @@ class DatabaseHelper {
     String? where,
     List<Object?>? whereArgs,
   }) async {
+    // Ensure initialization before any operation
+    await initDatabase();
+    
     switch (table) {
       case 'expenses':
         final expense = Expense.fromMap(values);
         await _localStorage.updateExpense(expense);
+        return 1;
+      case 'users':
+        await _localStorage.updateUser(values);
+        return 1;
+      case 'user_preferences':
+        await _localStorage.insertUserPreferences(values); // Update by inserting
         return 1;
       default:
         return 0;

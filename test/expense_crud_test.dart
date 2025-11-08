@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:expensemate/core/services/expense_service.dart';
 import 'package:expensemate/core/models/expense.dart';
 import 'package:expensemate/core/models/expense_category.dart';
@@ -12,9 +11,8 @@ void main() {
     late ExpenseProvider expenseProvider;
 
     setUpAll(() {
-      // Initialize SQLite for testing
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
+      // Initialize local storage for testing
+      // No SQLite initialization needed
     });
 
     setUp(() {

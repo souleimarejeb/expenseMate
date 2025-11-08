@@ -1,5 +1,7 @@
 import 'package:expensemate/routes/app_routes.dart';
 import 'package:expensemate/features/expenses_management/providers/expense_provider.dart';
+import 'package:expensemate/features/expenses_management/providers/expense_analytics_provider.dart';
+import 'package:expensemate/features/budget/providers/budget_tracking_provider.dart';
 import 'package:expensemate/features/user/providers/user_provider.dart';
 import 'package:expensemate/features/user/providers/user_preferences_provider.dart';
 import 'package:expensemate/features/widgets/main_layout.dart';
@@ -20,6 +22,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ExpenseProvider()),
+        ChangeNotifierProvider(create: (_) => ExpenseAnalyticsProvider()),
+        ChangeNotifierProvider(create: (_) => BudgetTrackingProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => UserPreferencesProvider()),
       ],

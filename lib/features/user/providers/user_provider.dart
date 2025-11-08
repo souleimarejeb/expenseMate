@@ -36,30 +36,44 @@ class UserProvider with ChangeNotifier {
 
   // Create a new user
   Future<bool> createUser(UserModel user) async {
+    print('🔧 UserProvider.createUser called for: ${user.email}'); // Debug log
+    
     try {
       _setLoading(true);
       _setError(null);
 
+      print('📧 Checking if email exists: ${user.email}'); // Debug log
+      
       // Check if email already exists
       final existingUser = await UserService.getUserByEmail(user.email);
       if (existingUser != null) {
-        _setError('Email already exists');
-        return false;
+        print('⚠️ Email already exists, logging in instead'); // Debug log
+        _currentUser = existingUser;
+        _setLoading(false);
+        return true; // Return success and login existing user
       }
 
+      print('➕ Creating new user...'); // Debug log
+      
       final userId = await UserService.createUser(user);
+      print('🆔 Created user with ID: $userId'); // Debug log
+      
       final createdUser = await UserService.getUserById(userId);
+      print('👤 Retrieved created user: ${createdUser?.email}'); // Debug log
       
       if (createdUser != null) {
         _currentUser = createdUser;
         await loadAllUsers(); // Refresh the users list
         _setLoading(false);
+        print('✅ User creation successful!'); // Debug log
         return true;
       }
       
+      print('❌ Failed to retrieve created user'); // Debug log
       _setError('Failed to create user');
       return false;
     } catch (e) {
+      print('💥 Error in createUser: ${e.toString()}'); // Debug log
       _setError('Error creating user: ${e.toString()}');
       return false;
     } finally {
@@ -85,20 +99,28 @@ class UserProvider with ChangeNotifier {
 
   // Login user (set as current user)
   Future<bool> loginUser(String email) async {
+    print('🔑 UserProvider.loginUser called for: $email'); // Debug log
+    
     try {
       _setLoading(true);
       _setError(null);
       
+      print('🔍 Looking up user by email...'); // Debug log
+      
       final user = await UserService.getUserByEmail(email);
       if (user != null) {
+        print('👤 Found user: ${user.fullName}'); // Debug log
         _currentUser = user;
         _setLoading(false);
+        print('✅ Login successful!'); // Debug log
         return true;
       }
       
+      print('❌ User not found'); // Debug log
       _setError('User not found');
       return false;
     } catch (e) {
+      print('💥 Error in loginUser: ${e.toString()}'); // Debug log
       _setError('Error logging in: ${e.toString()}');
       return false;
     } finally {

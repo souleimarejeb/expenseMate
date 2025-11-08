@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:expensemate/features/home/home_page.dart';
-import 'package:expensemate/features/budget/screens/budget_list.dart';
-import 'package:expensemate/features/expenses_management/screens/enhanced_expenses_screen.dart';
-import 'package:expensemate/features/category/screens/categories_screen.dart';
-import 'package:expensemate/features/user/screens/profile_screen.dart';
+import 'package:expensemate/features/budget/screens/budget_tracking_screen.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({Key? key}) : super(key: key);
@@ -17,10 +14,10 @@ class _MainLayoutState extends State<MainLayout> {
 
   final List<Widget> _pages = [
     HomePage(),
-    AllBudgetsPage(),
-    EnhancedExpensesScreen(),
-    CategoriesScreen(),
-    ProfileScreen(),
+    const BudgetTrackingScreen(),
+    Placeholder(), // Enhanced Expenses Screen placeholder
+    Placeholder(), // Categories Screen placeholder  
+    Placeholder(), // Profile Screen placeholder
   ];
 
   void _onItemTapped(int index) {

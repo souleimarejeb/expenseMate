@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../core/models/expense.dart';
-import '../../../core/models/expense_category.dart';
-import '../providers/expense_provider.dart';
+import '../providers/expense_analytics_provider.dart';
 
 class AddEditExpenseScreen extends StatefulWidget {
   final Expense? expense;
@@ -30,6 +29,13 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
   void initState() {
     super.initState();
     _initializeFields();
+    // Initialize provider data
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<ExpenseAnalyticsProvider>();
+      if (provider.categories.isEmpty) {
+        provider.loadData();
+      }
+    });
   }
 
   void _initializeFields() {
@@ -231,7 +237,7 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
   }
 
   Widget _buildCategorySelector() {
-    return Consumer<ExpenseProvider>(
+    return Consumer<ExpenseAnalyticsProvider>(
       builder: (context, provider, child) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -458,7 +464,7 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
 
   void _suggestCategory() async {
     if (_titleController.text.isNotEmpty && _selectedCategoryId == null) {
-      final provider = context.read<ExpenseProvider>();
+      final provider = context.read<ExpenseAnalyticsProvider>();
       final suggestion = await provider.getCategorySuggestion(
         _titleController.text,
         _descriptionController.text,
@@ -491,7 +497,7 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
       updatedAt: DateTime.now(),
     );
 
-    final provider = context.read<ExpenseProvider>();
+    final provider = context.read<ExpenseAnalyticsProvider>();
     final success = _isEditing 
         ? await provider.updateExpense(expense)
         : await provider.addExpense(expense);
@@ -539,7 +545,7 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
             onPressed: () {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Close screen
-              context.read<ExpenseProvider>().deleteExpense(widget.expense!.id!);
+              context.read<ExpenseAnalyticsProvider>().deleteExpense(widget.expense!.id!);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),

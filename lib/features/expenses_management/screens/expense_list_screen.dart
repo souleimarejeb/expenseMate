@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/expense_provider.dart';
+import '../providers/expense_analytics_provider.dart';
 import '../widgets/expense_card.dart';
 import '../widgets/expense_filter_sheet.dart';
 import 'add_edit_expense_screen.dart';
-import 'expense_analytics_screen.dart';
+import 'expense_management_screen.dart';
 import 'recurring_expenses_screen.dart';
 
 class ExpenseListScreen extends StatefulWidget {
@@ -101,7 +102,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen>
         children: [
           _buildExpensesList(),
           const RecurringExpensesScreen(),
-          const ExpenseAnalyticsScreen(),
+          const ExpenseManagementScreen(),
         ],
       ),
       floatingActionButton: ScaleTransition(

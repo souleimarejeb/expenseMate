@@ -27,6 +27,9 @@ class LocalStorageHelper {
   static const String _categoriesKey = 'categories';
   static const String _attachmentsKey = 'attachments';
   static const String _countersKey = 'counters';
+  static const String _usersKey = 'users';
+  static const String _userPreferencesKey = 'user_preferences';
+  static const String _currentUserKey = 'current_user';
 
   // Initialize default categories if none exist
   Future<void> _initializeDefaultCategories() async {
@@ -415,6 +418,135 @@ class LocalStorageHelper {
       for (final attachment in attachments) {
         await insertExpenseAttachment(attachment);
       }
+    }
+  }
+
+  // ========================================
+  // USER MANAGEMENT METHODS
+  // ========================================
+
+  // Insert user
+  Future<void> insertUser(Map<String, dynamic> userData) async {
+    final users = await getUsers();
+    
+    // Generate an ID if not provided
+    if (userData['id'] == null) {
+      // Generate a simple integer ID based on current users count + 1
+      final users = await getUsers();
+      userData['id'] = users.length + 1;
+    }
+    
+    // Check if user already exists (by email)
+    final existingIndex = users.indexWhere((u) => u['email'] == userData['email']);
+    
+    if (existingIndex >= 0) {
+      // Update existing user
+      users[existingIndex] = userData;
+    } else {
+      // Add new user
+      users.add(userData);
+    }
+    
+    await _prefs.setString(_usersKey, jsonEncode(users));
+  }
+
+  // Get all users
+  Future<List<Map<String, dynamic>>> getUsers() async {
+    final usersJson = _prefs.getString(_usersKey);
+    if (usersJson == null) return [];
+    
+    final List<dynamic> usersList = jsonDecode(usersJson);
+    return usersList.cast<Map<String, dynamic>>();
+  }
+
+  // Get user by email
+  Future<Map<String, dynamic>?> getUserByEmail(String email) async {
+    final users = await getUsers();
+    try {
+      return users.firstWhere((user) => user['email'] == email);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Get user by ID
+  Future<Map<String, dynamic>?> getUserById(int id) async {
+    final users = await getUsers();
+    try {
+      return users.firstWhere((user) => user['id'] == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Update user
+  Future<void> updateUser(Map<String, dynamic> userData) async {
+    final users = await getUsers();
+    final index = users.indexWhere((u) => u['id'] == userData['id']);
+    
+    if (index >= 0) {
+      users[index] = userData;
+      await _prefs.setString(_usersKey, jsonEncode(users));
+    }
+  }
+
+  // Delete user
+  Future<void> deleteUser(int userId) async {
+    final users = await getUsers();
+    users.removeWhere((u) => u['id'] == userId);
+    await _prefs.setString(_usersKey, jsonEncode(users));
+  }
+
+  // Set current user
+  Future<void> setCurrentUser(int userId) async {
+    await _prefs.setInt(_currentUserKey, userId);
+  }
+
+  // Get current user
+  Future<int?> getCurrentUserId() async {
+    return _prefs.getInt(_currentUserKey);
+  }
+
+  // Clear current user (logout)
+  Future<void> clearCurrentUser() async {
+    await _prefs.remove(_currentUserKey);
+  }
+
+  // Insert user preferences
+  Future<void> insertUserPreferences(Map<String, dynamic> preferencesData) async {
+    final preferences = await getUserPreferences();
+    
+    // Check if preferences exist for this user
+    final userId = preferencesData['userId'];
+    final existingIndex = preferences.indexWhere((p) => p['userId'] == userId);
+    
+    if (existingIndex >= 0) {
+      // Update existing preferences
+      preferences[existingIndex] = preferencesData;
+    } else {
+      // Add new preferences
+      preferences.add(preferencesData);
+    }
+    
+    await _prefs.setString(_userPreferencesKey, jsonEncode(preferences));
+  }
+
+  // Get all user preferences
+  Future<List<Map<String, dynamic>>> getUserPreferences() async {
+    final prefsJson = _prefs.getString(_userPreferencesKey);
+    if (prefsJson == null) return [];
+    
+    final List<dynamic> prefsList = jsonDecode(prefsJson);
+    return prefsList.cast<Map<String, dynamic>>();
+  }
+
+  // Get preferences for specific user
+  Future<Map<String, dynamic>?> getUserPreferencesByUserId(int userId) async {
+    final preferences = await getUserPreferences();
+    try {
+      return preferences.firstWhere((pref) => pref['userId'] == userId);
+    } catch (e) {
+      return null;
     }
   }
 }

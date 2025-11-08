@@ -1,6 +1,7 @@
 
 import 'package:expensemate/features/budget/screens/create_budget.dart';
 import 'package:expensemate/features/budget/screens/budget_list.dart';
+import 'package:expensemate/features/budget/screens/budget_tracking_screen.dart';
 import 'package:expensemate/features/home/home_page.dart';
 import 'package:expensemate/features/expenses_management/screens/expense_list_screen.dart';
 import 'package:expensemate/features/expenses_management/screens/add_edit_expense_screen.dart';
@@ -20,6 +21,7 @@ class AppRoutes {
   static const String mainLayout = '/mainLayout';
   static const String createBudget = '/createBudget';
   static const String budgetList = '/budgetList';
+  static const String budgetTracking = '/budgetTracking';
   static const String expenses = '/expenses';
   static const String expensesNew = '/expensesNew';
   static const String addExpense = '/addExpense';
@@ -43,6 +45,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => CreateBudgetPage());
       case budgetList:
         return MaterialPageRoute(builder: (_) => AllBudgetsPage());
+      case budgetTracking:
+        return MaterialPageRoute(builder: (_) => const BudgetTrackingScreen());
       case expenses:
         return MaterialPageRoute(builder: (_) => const ExpenseListScreen());
       case expensesNew:

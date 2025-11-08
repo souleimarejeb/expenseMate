@@ -204,12 +204,70 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                         ),
                       ),
                       
-                      // Demo account button
-                      if (_isLogin)
-                        TextButton(
-                          onPressed: _createDemoAccount,
-                          child: const Text('Try Demo Account'),
+                      // Demo account section - always visible
+                      const SizedBox(height: 24),
+                      
+                      // Divider
+                      Row(
+                        children: [
+                          Expanded(child: Divider(color: Colors.grey[300])),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'OR',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: Colors.grey[300])),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Demo account button - prominent
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: _isLoading ? null : _createDemoAccount,
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            side: BorderSide(color: Theme.of(context).primaryColor),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.science_outlined, 
+                                   color: Theme.of(context).primaryColor),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Try Demo Account',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                      ),
+                      
+                      const SizedBox(height: 8),
+                      
+                      Text(
+                        'No signup required • Full features • Test data included',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -270,6 +328,8 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
   }
 
   Future<void> _createDemoAccount() async {
+    print('🔥 Demo account button clicked!'); // Debug log
+    
     setState(() {
       _isLoading = true;
     });
@@ -279,32 +339,86 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
 
     const demoEmail = 'demo@expensemate.com';
     
-    // First try to login with existing demo account
-    bool success = await userProvider.loginUser(demoEmail);
-    
-    if (!success) {
-      // If login fails, create the demo account
+    try {
+      print('🔍 Attempting to login with demo email: $demoEmail'); // Debug log
+      
+      // Always create a fresh demo account for simplicity
       final demoUser = UserModel(
         firstName: 'Demo',
         lastName: 'User',
         email: demoEmail,
         monthlyIncome: 5000.0,
+        phone: '+1 (555) 123-4567',
+        bio: 'Demo account - click and go!',
       );
 
-      success = await userProvider.createUser(demoUser);
-    }
+      print('👤 Creating demo user: ${demoUser.fullName}'); // Debug log
+      
+      bool success = await userProvider.createUser(demoUser);
+      
+      print('✅ Demo account creation result: $success'); // Debug log
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
 
-      if (success) {
-        Navigator.of(context).pushReplacementNamed('/');
+        if (success) {
+          print('🚀 Navigating to main layout...'); // Debug log
+          
+          // Navigate to main app
+          Navigator.of(context).pushReplacementNamed('/mainLayout');
+          
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.celebration, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text('Demo Account Ready! 🎉')),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        } else {
+          // If creation fails, try login instead
+          print('🔄 Creation failed, trying login...'); // Debug log
+          success = await userProvider.loginUser(demoEmail);
+          
+          if (success) {
+            Navigator.of(context).pushReplacementNamed('/mainLayout');
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Welcome back to Demo Account!'),
+                backgroundColor: Colors.blue,
+              ),
+            );
+          } else {
+            throw Exception('Could not create or login to demo account');
+          }
+        }
+      }
+    } catch (e) {
+      print('❌ Demo account error: $e'); // Debug log
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        // Show simpler error message
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Welcome to ExpenseMate Demo!'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: Text('Demo account issue. Please try again.'),
+            backgroundColor: Colors.orange,
+            action: SnackBarAction(
+              label: 'RETRY',
+              textColor: Colors.white,
+              onPressed: _createDemoAccount,
+            ),
           ),
         );
       }

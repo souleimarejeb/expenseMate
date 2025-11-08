@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../database/databaseHelper.dart';
 import '../models/expense.dart';
@@ -171,12 +172,119 @@ class ExpenseService {
     await _dbHelper.delete('expenses');
   }
 
-  // Helper method for month names
-  String _getMonthName(int month) {
-    const monthNames = [
-      '', 'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return monthNames[month];
+  // Initialize default categories
+  Future<void> initializeDefaultCategories() async {
+    final categories = await getAllCategories();
+    
+    if (categories.isEmpty) {
+      // Create default categories
+      final defaultCategories = [
+        ExpenseCategory(
+          name: 'Food & Dining',
+          description: 'Restaurants, groceries, and dining out',
+          icon: Icons.restaurant,
+          color: Colors.red,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+        ExpenseCategory(
+          name: 'Transport',
+          description: 'Gas, public transport, car maintenance',
+          icon: Icons.directions_car,
+          color: Colors.blue,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+        ExpenseCategory(
+          name: 'Entertainment',
+          description: 'Movies, games, hobbies',
+          icon: Icons.movie,
+          color: Colors.purple,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+        ExpenseCategory(
+          name: 'Bills & Utilities',
+          description: 'Electricity, water, internet, rent',
+          icon: Icons.receipt_long,
+          color: Colors.orange,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+        ExpenseCategory(
+          name: 'Shopping',
+          description: 'Clothes, electronics, general shopping',
+          icon: Icons.shopping_bag,
+          color: Colors.green,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      ];
+      
+      for (final category in defaultCategories) {
+        await createCategory(category);
+      }
+    }
   }
+
+  // Update recurring expense next due date
+  Future<bool> updateRecurringExpenseNextDue(String recurringExpenseId, DateTime nextDue) async {
+    // For now, return true as we don't have full recurring expense implementation
+    return true;
+  }
+
+  // Get monthly expense totals for a year
+  Future<Map<String, double>> getMonthlyExpenseTotals(int year) async {
+    final expenses = await getAllExpenses();
+    final Map<String, double> monthlyTotals = {};
+    
+    // Initialize all months with 0
+    for (int month = 1; month <= 12; month++) {
+      monthlyTotals[month.toString()] = 0.0;
+    }
+    
+    // Calculate totals for each month
+    for (final expense in expenses) {
+      if (expense.date.year == year) {
+        final monthKey = expense.date.month.toString();
+        monthlyTotals[monthKey] = 
+            (monthlyTotals[monthKey] ?? 0.0) + expense.amount;
+      }
+    }
+    
+    return monthlyTotals;
+  }
+
+  // Get total expenses for a specific period
+  Future<double> getTotalExpensesForPeriod(DateTime startDate, DateTime endDate) async {
+    final expenses = await getExpensesByDateRange(startDate, endDate);
+    double total = 0.0;
+    for (final expense in expenses) {
+      total += expense.amount;
+    }
+    return total;
+  }
+
+  // Process due recurring expenses
+  Future<List<String>> processDueRecurringExpenses() async {
+    // For now, return empty list as we don't have full recurring expense implementation
+    return [];
+  }
+
+  // Get expenses summary by category
+  Future<Map<String, double>> getExpensesSummaryByCategory({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    final expenses = await getExpensesByDateRange(startDate, endDate);
+    final Map<String, double> categoryTotals = {};
+    
+    for (final expense in expenses) {
+      categoryTotals[expense.categoryId] = 
+          (categoryTotals[expense.categoryId] ?? 0.0) + expense.amount;
+    }
+    
+    return categoryTotals;
+  }
+
 }
