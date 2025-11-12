@@ -1,3 +1,4 @@
+import 'package:expensemate/core/database/databaseHelper.dart';
 import 'package:expensemate/features/widgets/main_layout.dart';
 import 'package:expensemate/routes/app_routes.dart';
 import 'package:expensemate/core/services/auth_service.dart';
@@ -6,6 +7,8 @@ import 'package:flutter/material.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseHelper.instance;
+
   await AuthService().init();
   runApp(const MyApp());
 }

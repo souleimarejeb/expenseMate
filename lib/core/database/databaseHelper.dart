@@ -54,7 +54,22 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+    CREATE TABLE budgets(
+      id TEXT PRIMARY KEY,
+      limit_amount REAL NOT NULL,
+      spent_amount REAL NOT NULL,
+      status TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      month INTEGER NOT NULL,
+      category TEXT
+    )
+  ''');
+
     await db.execute('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_budgets_month ON budgets(month);');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_budgets_category ON budgets(category);');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -70,6 +85,25 @@ class DatabaseHelper {
         )
       ''');
       await db.execute('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);');
+
+    }
+    if (oldVersion < 3) {
+      print("📊 CREATING BUDGETS TABLE FOR VERSION 3");
+      // Add budgets table for version 3
+      await db.execute('''
+      CREATE TABLE IF NOT EXISTS budgets(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        limit_amount REAL NOT NULL,
+        spent_amount REAL NOT NULL,
+        status TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        month INTEGER NOT NULL,
+        category TEXT
+      )
+    ''');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_budgets_month ON budgets(month);');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_budgets_category ON budgets(category);');
     }
   }
 
