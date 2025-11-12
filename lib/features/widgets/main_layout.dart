@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:expensemate/features/home/screens/home_page.dart';
 import 'package:expensemate/features/budget/screens/budget_list.dart';
+import 'package:expensemate/features/user/screens/profile_screen.dart';
 
 
 
@@ -19,7 +20,7 @@ class _MainLayoutState extends State<MainLayout> {
     AllBudgetsPage(),
     Placeholder(),
     Placeholder(),
-    const Placeholder(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {

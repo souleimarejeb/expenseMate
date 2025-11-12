@@ -26,8 +26,9 @@ class DatabaseHelper {
     // Open/create the database
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDb,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -41,6 +42,35 @@ class DatabaseHelper {
         createdAt TEXT NOT NULL
       )
     ''');
+
+    // Users table for local auth
+    await db.execute('''
+      CREATE TABLE users(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        avatar_url TEXT
+      )
+    ''');
+
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Ensure users table exists when upgrading from older schema
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS users(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL UNIQUE,
+          password_hash TEXT NOT NULL,
+          avatar_url TEXT
+        )
+      ''');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);');
+    }
   }
 
 }
