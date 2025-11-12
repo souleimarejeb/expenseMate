@@ -18,7 +18,7 @@ class MonthlySpendingChart extends StatelessWidget {
     }
 
     return Container(
-      height: 300,
+      height: 350,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -36,12 +36,14 @@ class MonthlySpendingChart extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Monthly Spending',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[800],
+              const Expanded(
+                child: Text(
+                  'Monthly Spending by Category',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               Text(
@@ -76,10 +78,12 @@ class MonthlySpendingChart extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 20),
                 Expanded(
-                  flex: 2,
-                  child: _buildLegend(),
+                  flex: 3,
+                  child: SingleChildScrollView(
+                    child: _buildLegend(),
+                  ),
                 ),
               ],
             ),
@@ -182,23 +186,26 @@ class MonthlySpendingChart extends StatelessWidget {
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: categorySpending.entries.map((entry) {
         final colorIndex = categorySpending.keys.toList().indexOf(entry.key);
         final color = colors[colorIndex % colors.length];
         
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 12,
-                height: 12,
+                width: 14,
+                height: 14,
+                margin: const EdgeInsets.only(top: 2),
                 decoration: BoxDecoration(
                   color: color,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(3),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,18 +213,21 @@ class MonthlySpendingChart extends StatelessWidget {
                     Text(
                       _getCategoryName(entry.key),
                       style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
+                        height: 1.2,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      overflow: TextOverflow.visible,
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       '\$${NumberFormat('#,##0.00').format(entry.value)}',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         color: Colors.grey[600],
+                        height: 1.2,
                       ),
                     ),
                   ],

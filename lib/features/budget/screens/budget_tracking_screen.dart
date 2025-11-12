@@ -10,6 +10,7 @@ import '../widgets/monthly_spending_chart.dart';
 import '../widgets/budget_comparison_chart.dart';
 import '../widgets/category_breakdown_card.dart';
 import '../widgets/expense_filter_widget.dart';
+import '../../account/screens/account_screen.dart';
 
 class BudgetTrackingScreen extends StatefulWidget {
   const BudgetTrackingScreen({Key? key}) : super(key: key);
@@ -91,6 +92,24 @@ class _BudgetTrackingScreenState extends State<BudgetTrackingScreen>
         ),
       ),
       centerTitle: true,
+      actions: [
+        IconButton(
+          icon: const Icon(
+            Icons.account_circle_outlined,
+            color: Colors.black87,
+            size: 28,
+          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AccountScreen(),
+              ),
+            );
+          },
+        ),
+        const SizedBox(width: 8),
+      ],
       bottom: TabBar(
         controller: _tabController,
         labelColor: Colors.blue,

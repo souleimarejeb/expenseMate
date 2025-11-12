@@ -4,6 +4,7 @@ import '../../../core/models/expense_category.dart';
 import '../providers/expense_analytics_provider.dart';
 import 'add_edit_expense_screen.dart';
 import 'expense_statistics_screen.dart';
+import '../../account/screens/account_screen.dart';
 
 class ExpensesScreen extends StatefulWidget {
   const ExpensesScreen({Key? key}) : super(key: key);
@@ -37,6 +38,24 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.account_circle_outlined,
+              color: Colors.black87,
+              size: 28,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AccountScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Consumer<ExpenseAnalyticsProvider>(
         builder: (context, provider, child) {

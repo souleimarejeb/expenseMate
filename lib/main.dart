@@ -3,7 +3,9 @@ import 'package:expensemate/features/expenses_management/providers/expense_provi
 import 'package:expensemate/features/expenses_management/providers/expense_analytics_provider.dart';
 import 'package:expensemate/features/expenses_management/providers/category_provider.dart';
 import 'package:expensemate/features/budget/providers/budget_tracking_provider.dart';
-import 'package:expensemate/features/widgets/main_layout.dart';
+import 'package:expensemate/features/user/providers/user_provider.dart';
+import 'package:expensemate/features/auth/providers/auth_provider.dart';
+import 'package:expensemate/features/auth/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,10 +22,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ExpenseProvider()),
         ChangeNotifierProvider(create: (_) => ExpenseAnalyticsProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => BudgetTrackingProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -70,7 +74,7 @@ class MyApp extends StatelessWidget {
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
         ),
-        home: MainLayout(),
+        home: const LoginScreen(),
         onGenerateRoute: AppRoutes.generateRoute,
       ),
     );

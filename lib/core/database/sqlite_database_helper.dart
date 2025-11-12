@@ -26,7 +26,7 @@ class SQLiteDatabaseHelper {
     
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -100,10 +100,26 @@ class SQLiteDatabaseHelper {
       )
     ''');
 
+    // Create Users table
+    await db.execute('''
+      CREATE TABLE users (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        phone_number TEXT,
+        profile_image_path TEXT,
+        bio TEXT,
+        preferences TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+
     // Create indexes for better query performance
     await db.execute('CREATE INDEX idx_expenses_category_id ON expenses(category_id)');
     await db.execute('CREATE INDEX idx_expenses_date ON expenses(date)');
     await db.execute('CREATE INDEX idx_attachments_expense_id ON expense_attachments(expense_id)');
+    await db.execute('CREATE INDEX idx_users_email ON users(email)');
     
     // Insert default categories
     await _insertDefaultCategories(db);
@@ -119,6 +135,46 @@ class SQLiteDatabaseHelper {
     if (oldVersion < 3) {
       // Add metadata column to expenses table
       await db.execute('ALTER TABLE expenses ADD COLUMN metadata TEXT');
+    }
+    if (oldVersion < 4) {
+      // Check if users table exists
+      var tableExists = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+      );
+      
+      if (tableExists.isNotEmpty) {
+        // Table exists, check if it has the name column
+        var columns = await db.rawQuery("PRAGMA table_info(users)");
+        var hasNameColumn = columns.any((col) => col['name'] == 'name');
+        
+        if (!hasNameColumn) {
+          // Drop the old table and recreate it with the correct schema
+          await db.execute('DROP TABLE IF EXISTS users');
+          await db.execute('DROP INDEX IF EXISTS idx_users_email');
+        }
+      }
+      
+      // Now create the users table (if it doesn't exist or was just dropped)
+      var tableExists2 = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+      );
+      
+      if (tableExists2.isEmpty) {
+        await db.execute('''
+          CREATE TABLE users (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            phone_number TEXT,
+            profile_image_path TEXT,
+            bio TEXT,
+            preferences TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+          )
+        ''');
+        await db.execute('CREATE INDEX idx_users_email ON users(email)');
+      }
     }
   }
 
@@ -369,8 +425,75 @@ class SQLiteDatabaseHelper {
     await db.delete('expense_attachments');
     await db.delete('expense_categories');
     await db.delete('recurring_expenses');
+    await db.delete('users');
     
     // Re-insert default categories
     await _insertDefaultCategories(db);
+  }
+
+  // CRUD Operations for Users
+  Future<int> insertUser(Map<String, dynamic> user) async {
+    final db = await database;
+    return await db.insert('users', user);
+  }
+
+  Future<List<Map<String, dynamic>>> getUsers() async {
+    final db = await database;
+    return await db.query('users', orderBy: 'created_at DESC');
+  }
+
+  Future<Map<String, dynamic>?> getUserById(String id) async {
+    final db = await database;
+    final maps = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    
+    if (maps.isEmpty) return null;
+    return maps.first;
+  }
+
+  Future<Map<String, dynamic>?> getUserByEmail(String email) async {
+    final db = await database;
+    final maps = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email],
+      limit: 1,
+    );
+    
+    if (maps.isEmpty) return null;
+    return maps.first;
+  }
+
+  Future<int> updateUser(String id, Map<String, dynamic> user) async {
+    final db = await database;
+    return await db.update(
+      'users',
+      user,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> deleteUser(String id) async {
+    final db = await database;
+    return await db.delete(
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> searchUsers(String query) async {
+    final db = await database;
+    return await db.query(
+      'users',
+      where: 'name LIKE ? OR email LIKE ?',
+      whereArgs: ['%$query%', '%$query%'],
+      orderBy: 'name ASC',
+    );
   }
 }

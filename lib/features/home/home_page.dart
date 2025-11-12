@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../account/screens/account_screen.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -41,6 +42,21 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: Icon(
+              Icons.account_circle_outlined,
+              color: Colors.white,
+              size: 28,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AccountScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: Icon(
               Icons.notifications_outlined,
