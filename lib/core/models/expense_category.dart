@@ -28,7 +28,7 @@ class ExpenseCategory {
     return {
       'id': id,
       'name': name,
-      'icon': String.fromCharCode(icon.codePoint), // Store as emoji character
+      'icon': icon.codePoint.toString(), // Store as icon code point string
       'color': color.value,
       'is_default': isActive ? 1 : 0,
       'created_at': createdAt.toIso8601String(),
@@ -37,20 +37,29 @@ class ExpenseCategory {
 
   // Create from Map
   factory ExpenseCategory.fromMap(Map<String, dynamic> map) {
-    // Handle both old and new schema
+    // Handle icon parsing
     IconData iconData;
-    if (map.containsKey('icon') && map['icon'] is String) {
-      // New schema: icon as emoji string
-      final String iconStr = map['icon'] ?? '📌';
-      iconData = IconData(
-        iconStr.isNotEmpty ? iconStr.codeUnitAt(0) : Icons.category.codePoint,
-        fontFamily: 'MaterialIcons',
-      );
+    if (map.containsKey('icon') && map['icon'] != null) {
+      final iconValue = map['icon'];
+      if (iconValue is String) {
+        // Try to parse as code point
+        final codePoint = int.tryParse(iconValue);
+        if (codePoint != null) {
+          iconData = IconData(codePoint, fontFamily: 'MaterialIcons');
+        } else {
+          // Fallback to default icon
+          iconData = Icons.category;
+        }
+      } else if (iconValue is int) {
+        iconData = IconData(iconValue, fontFamily: 'MaterialIcons');
+      } else {
+        iconData = Icons.category;
+      }
     } else if (map.containsKey('iconCodePoint')) {
       // Old schema: icon as IconData
       iconData = IconData(
         map['iconCodePoint'] ?? Icons.category.codePoint,
-        fontFamily: map['iconFontFamily'],
+        fontFamily: map['iconFontFamily'] ?? 'MaterialIcons',
       );
     } else {
       iconData = Icons.category;

@@ -24,7 +24,10 @@ void main() {
     'class Expense',
     'toMap()',
     'fromMap(',
-    'copyWith('
+    'copyWith(',
+    'category_id', // Check for proper SQLite column naming
+    'created_at',  // Check for proper SQLite column naming
+    'updated_at'   // Check for proper SQLite column naming
   ]);
   
   allChecks['ExpenseCategory Model'] = checkFile('lib/core/models/expense_category.dart', [
@@ -39,10 +42,18 @@ void main() {
   
   // 2. Check Service Layer
   print('\n🔧 Checking Service Layer...');
-  allChecks['Database Helper'] = checkFile('lib/core/database/databaseHelper.dart', [
+  allChecks['SQLite Database Helper'] = checkFile('lib/core/database/sqlite_database_helper.dart', [
+    'class SQLiteDatabaseHelper',
+    'insertExpense(',
+    'getExpenses(',
+    'updateExpense(',
+    'deleteExpense(',
+    'CREATE TABLE expenses'
+  ]);
+  
+  allChecks['Database Helper Wrapper'] = checkFile('lib/core/database/databaseHelper.dart', [
     'class DatabaseHelper',
-    'CREATE TABLE expenses',
-    'CREATE TABLE expense_categories'
+    'SQLiteDatabaseHelper'
   ]);
   
   allChecks['Expense Service'] = checkFile('lib/core/services/expense_service.dart', [

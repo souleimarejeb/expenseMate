@@ -132,6 +132,19 @@ class ExpenseService {
     });
   }
 
+  // Update category
+  Future<bool> updateCategory(ExpenseCategory category) async {
+    final updatedCategory = category.copyWith(updatedAt: DateTime.now());
+    final count = await _dbHelper.update('expense_categories', updatedCategory.toMap());
+    return count > 0;
+  }
+
+  // Delete category
+  Future<bool> deleteCategory(String categoryId) async {
+    final count = await _dbHelper.delete('expense_categories', where: 'id = ?', whereArgs: [categoryId]);
+    return count > 0;
+  }
+
   // CRUD Operations for Recurring Expenses (Simplified)
 
   // Create recurring expense

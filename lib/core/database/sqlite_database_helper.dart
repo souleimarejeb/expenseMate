@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/expense.dart';
@@ -25,39 +26,13 @@ class SQLiteDatabaseHelper {
     
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    // Create Users table
-    await db.execute('''
-      CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        username TEXT NOT NULL,
-        password TEXT NOT NULL,
-        created_at TEXT NOT NULL
-      )
-    ''');
-
-    // Create User Preferences table
-    await db.execute('''
-      CREATE TABLE user_preferences (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        theme TEXT DEFAULT 'light',
-        currency TEXT DEFAULT 'USD',
-        notification_enabled INTEGER DEFAULT 1,
-        budget_limit REAL DEFAULT 0.0,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-      )
-    ''');
-
     // Create Expense Categories table
     await db.execute('''
       CREATE TABLE expense_categories (
@@ -75,7 +50,6 @@ class SQLiteDatabaseHelper {
     await db.execute('''
       CREATE TABLE expenses (
         id TEXT PRIMARY KEY,
-        user_id INTEGER,
         title TEXT NOT NULL,
         amount REAL NOT NULL,
         category_id TEXT NOT NULL,
@@ -88,9 +62,9 @@ class SQLiteDatabaseHelper {
         location TEXT,
         notes TEXT,
         receiptImagePath TEXT,
+        metadata TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (category_id) REFERENCES expense_categories (id) ON DELETE CASCADE
       )
     ''');
@@ -113,7 +87,6 @@ class SQLiteDatabaseHelper {
     await db.execute('''
       CREATE TABLE recurring_expenses (
         id TEXT PRIMARY KEY,
-        user_id INTEGER,
         amount REAL NOT NULL,
         category_id TEXT NOT NULL,
         description TEXT NOT NULL,
@@ -123,13 +96,11 @@ class SQLiteDatabaseHelper {
         last_processed TEXT,
         is_active INTEGER DEFAULT 1,
         created_at TEXT NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (category_id) REFERENCES expense_categories (id)
       )
     ''');
 
     // Create indexes for better query performance
-    await db.execute('CREATE INDEX idx_expenses_user_id ON expenses(user_id)');
     await db.execute('CREATE INDEX idx_expenses_category_id ON expenses(category_id)');
     await db.execute('CREATE INDEX idx_expenses_date ON expenses(date)');
     await db.execute('CREATE INDEX idx_attachments_expense_id ON expense_attachments(expense_id)');
@@ -145,6 +116,10 @@ class SQLiteDatabaseHelper {
       await db.execute('ALTER TABLE expenses ADD COLUMN title TEXT DEFAULT ""');
       await db.execute('ALTER TABLE expenses ADD COLUMN receiptImagePath TEXT');
     }
+    if (oldVersion < 3) {
+      // Add metadata column to expenses table
+      await db.execute('ALTER TABLE expenses ADD COLUMN metadata TEXT');
+    }
   }
 
   Future<void> _insertDefaultCategories(Database db) async {
@@ -152,7 +127,7 @@ class SQLiteDatabaseHelper {
       {
         'id': 'food',
         'name': 'Food & Dining',
-        'icon': '🍔',
+        'icon': '${Icons.restaurant.codePoint}', // restaurant icon
         'color': 0xFFFF6B6B,
         'is_default': 1,
         'created_at': DateTime.now().toIso8601String(),
@@ -160,7 +135,7 @@ class SQLiteDatabaseHelper {
       {
         'id': 'transport',
         'name': 'Transportation',
-        'icon': '🚗',
+        'icon': '${Icons.directions_car.codePoint}', // car icon
         'color': 0xFF4ECDC4,
         'is_default': 1,
         'created_at': DateTime.now().toIso8601String(),
@@ -168,7 +143,7 @@ class SQLiteDatabaseHelper {
       {
         'id': 'shopping',
         'name': 'Shopping',
-        'icon': '🛍️',
+        'icon': '${Icons.shopping_bag.codePoint}', // shopping bag icon
         'color': 0xFF95E1D3,
         'is_default': 1,
         'created_at': DateTime.now().toIso8601String(),
@@ -176,7 +151,7 @@ class SQLiteDatabaseHelper {
       {
         'id': 'entertainment',
         'name': 'Entertainment',
-        'icon': '🎬',
+        'icon': '${Icons.movie.codePoint}', // movie icon
         'color': 0xFFF38181,
         'is_default': 1,
         'created_at': DateTime.now().toIso8601String(),
@@ -184,7 +159,7 @@ class SQLiteDatabaseHelper {
       {
         'id': 'bills',
         'name': 'Bills & Utilities',
-        'icon': '📄',
+        'icon': '${Icons.receipt_long.codePoint}', // receipt icon
         'color': 0xFFAA96DA,
         'is_default': 1,
         'created_at': DateTime.now().toIso8601String(),
@@ -192,7 +167,7 @@ class SQLiteDatabaseHelper {
       {
         'id': 'health',
         'name': 'Healthcare',
-        'icon': '⚕️',
+        'icon': '${Icons.local_hospital.codePoint}', // hospital icon
         'color': 0xFFFCBAD3,
         'is_default': 1,
         'created_at': DateTime.now().toIso8601String(),
@@ -200,7 +175,7 @@ class SQLiteDatabaseHelper {
       {
         'id': 'other',
         'name': 'Other',
-        'icon': '📌',
+        'icon': '${Icons.category.codePoint}', // category icon
         'color': 0xFFB8B8D1,
         'is_default': 1,
         'created_at': DateTime.now().toIso8601String(),
@@ -220,20 +195,9 @@ class SQLiteDatabaseHelper {
     return await db.insert('expenses', map);
   }
 
-  Future<List<Expense>> getExpenses({String? userId}) async {
+  Future<List<Expense>> getExpenses() async {
     final db = await database;
-    List<Map<String, dynamic>> maps;
-    
-    if (userId != null) {
-      maps = await db.query(
-        'expenses',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-        orderBy: 'date DESC',
-      );
-    } else {
-      maps = await db.query('expenses', orderBy: 'date DESC');
-    }
+    final maps = await db.query('expenses', orderBy: 'date DESC');
     
     return List.generate(maps.length, (i) {
       return Expense.fromMap(maps[i]);
@@ -351,91 +315,12 @@ class SQLiteDatabaseHelper {
     );
   }
 
-  // User Operations
-  Future<int> insertUser(Map<String, dynamic> user) async {
-    final db = await database;
-    return await db.insert('users', user);
-  }
-
-  Future<List<Map<String, dynamic>>> getUsers() async {
-    final db = await database;
-    return await db.query('users');
-  }
-
-  Future<Map<String, dynamic>?> getUserById(int id) async {
-    final db = await database;
-    final maps = await db.query(
-      'users',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-    return maps.isNotEmpty ? maps.first : null;
-  }
-
-  Future<Map<String, dynamic>?> getUserByEmail(String email) async {
-    final db = await database;
-    final maps = await db.query(
-      'users',
-      where: 'email = ?',
-      whereArgs: [email],
-      limit: 1,
-    );
-    return maps.isNotEmpty ? maps.first : null;
-  }
-
-  Future<int> updateUser(Map<String, dynamic> user) async {
-    final db = await database;
-    return await db.update(
-      'users',
-      user,
-      where: 'id = ?',
-      whereArgs: [user['id']],
-    );
-  }
-
-  // User Preferences Operations
-  Future<int> insertUserPreferences(Map<String, dynamic> preferences) async {
-    final db = await database;
-    return await db.insert('user_preferences', preferences);
-  }
-
-  Future<List<Map<String, dynamic>>> getUserPreferences({int? userId}) async {
-    final db = await database;
-    if (userId != null) {
-      return await db.query(
-        'user_preferences',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      );
-    }
-    return await db.query('user_preferences');
-  }
-
-  Future<int> updateUserPreferences(Map<String, dynamic> preferences) async {
-    final db = await database;
-    return await db.update(
-      'user_preferences',
-      preferences,
-      where: 'user_id = ?',
-      whereArgs: [preferences['user_id']],
-    );
-  }
-
   // Statistics and Analytics
-  Future<double> getTotalExpensesByCategory(String categoryId, {String? userId}) async {
+  Future<double> getTotalExpensesByCategory(String categoryId) async {
     final db = await database;
-    String whereClause = 'category_id = ?';
-    List<dynamic> whereArgs = [categoryId];
-    
-    if (userId != null) {
-      whereClause += ' AND user_id = ?';
-      whereArgs.add(userId);
-    }
-    
     final result = await db.rawQuery(
-      'SELECT SUM(amount) as total FROM expenses WHERE $whereClause',
-      whereArgs,
+      'SELECT SUM(amount) as total FROM expenses WHERE category_id = ?',
+      [categoryId],
     );
     
     return result.first['total'] != null ? (result.first['total'] as num).toDouble() : 0.0;
@@ -443,46 +328,25 @@ class SQLiteDatabaseHelper {
 
   Future<double> getTotalExpensesByDateRange(
     DateTime startDate,
-    DateTime endDate, {
-    String? userId,
-  }) async {
+    DateTime endDate,
+  ) async {
     final db = await database;
-    String whereClause = 'date BETWEEN ? AND ?';
-    List<dynamic> whereArgs = [
-      startDate.toIso8601String(),
-      endDate.toIso8601String(),
-    ];
-    
-    if (userId != null) {
-      whereClause += ' AND user_id = ?';
-      whereArgs.add(userId);
-    }
-    
     final result = await db.rawQuery(
-      'SELECT SUM(amount) as total FROM expenses WHERE $whereClause',
-      whereArgs,
+      'SELECT SUM(amount) as total FROM expenses WHERE date BETWEEN ? AND ?',
+      [startDate.toIso8601String(), endDate.toIso8601String()],
     );
     
     return result.first['total'] != null ? (result.first['total'] as num).toDouble() : 0.0;
   }
 
-  Future<Map<String, double>> getExpensesByCategory({String? userId}) async {
+  Future<Map<String, double>> getExpensesByCategory() async {
     final db = await database;
-    String query = '''
+    final result = await db.rawQuery('''
       SELECT c.name, SUM(e.amount) as total
       FROM expenses e
       JOIN expense_categories c ON e.category_id = c.id
-    ''';
-    
-    List<dynamic> whereArgs = [];
-    if (userId != null) {
-      query += ' WHERE e.user_id = ?';
-      whereArgs.add(userId);
-    }
-    
-    query += ' GROUP BY c.name';
-    
-    final result = await db.rawQuery(query, whereArgs);
+      GROUP BY c.name
+    ''');
     
     Map<String, double> categoryTotals = {};
     for (var row in result) {
@@ -504,8 +368,6 @@ class SQLiteDatabaseHelper {
     await db.delete('expenses');
     await db.delete('expense_attachments');
     await db.delete('expense_categories');
-    await db.delete('user_preferences');
-    await db.delete('users');
     await db.delete('recurring_expenses');
     
     // Re-insert default categories

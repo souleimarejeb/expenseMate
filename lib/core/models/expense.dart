@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Expense {
   final String? id;
   final String title;
@@ -32,13 +34,13 @@ class Expense {
       'title': title,
       'description': description,
       'amount': amount,
-      'categoryId': categoryId,
+      'category_id': categoryId, // SQLite uses snake_case
       'date': date.toIso8601String(),
       'receiptImagePath': receiptImagePath,
       'location': location,
       'metadata': metadata != null ? _encodeMetadata(metadata!) : null,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'created_at': createdAt.toIso8601String(), // SQLite uses snake_case
+      'updated_at': updatedAt.toIso8601String(), // SQLite uses snake_case
     };
   }
 
@@ -49,13 +51,13 @@ class Expense {
       title: map['title'] ?? '',
       description: map['description'] ?? '',
       amount: (map['amount'] ?? 0.0).toDouble(),
-      categoryId: map['categoryId'] ?? '',
+      categoryId: map['category_id'] ?? map['categoryId'] ?? '', // Support both formats for backward compatibility
       date: DateTime.parse(map['date']),
       receiptImagePath: map['receiptImagePath'],
       location: map['location'],
       metadata: map['metadata'] != null ? _decodeMetadata(map['metadata']) : null,
-      createdAt: DateTime.parse(map['createdAt']),
-      updatedAt: DateTime.parse(map['updatedAt']),
+      createdAt: DateTime.parse(map['created_at'] ?? map['createdAt'] ?? DateTime.now().toIso8601String()), // Support both formats
+      updatedAt: DateTime.parse(map['updated_at'] ?? map['updatedAt'] ?? DateTime.now().toIso8601String()), // Support both formats
     );
   }
 
@@ -90,13 +92,22 @@ class Expense {
 
   // Helper methods for metadata encoding/decoding
   static String _encodeMetadata(Map<String, dynamic> metadata) {
-    // Simple JSON encoding - you might want to use dart:convert in real implementation
-    return metadata.toString();
+    // Proper JSON encoding using dart:convert
+    try {
+      return jsonEncode(metadata);
+    } catch (e) {
+      return '{}';
+    }
   }
 
   static Map<String, dynamic> _decodeMetadata(String metadataString) {
-    // Simple decoding - implement proper JSON parsing
-    return {};
+    // Proper JSON decoding using dart:convert
+    try {
+      final decoded = jsonDecode(metadataString);
+      return decoded is Map<String, dynamic> ? decoded : {};
+    } catch (e) {
+      return {};
+    }
   }
 
   @override

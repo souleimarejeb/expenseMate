@@ -1,6 +1,7 @@
 import 'package:expensemate/routes/app_routes.dart';
 import 'package:expensemate/features/expenses_management/providers/expense_provider.dart';
 import 'package:expensemate/features/expenses_management/providers/expense_analytics_provider.dart';
+import 'package:expensemate/features/expenses_management/providers/category_provider.dart';
 import 'package:expensemate/features/budget/providers/budget_tracking_provider.dart';
 import 'package:expensemate/features/widgets/main_layout.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ExpenseProvider()),
         ChangeNotifierProvider(create: (_) => ExpenseAnalyticsProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => BudgetTrackingProvider()),
       ],
       child: MaterialApp(

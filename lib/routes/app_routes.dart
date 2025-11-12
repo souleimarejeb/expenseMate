@@ -7,10 +7,6 @@ import 'package:expensemate/features/expenses_management/screens/expense_list_sc
 import 'package:expensemate/features/expenses_management/screens/add_edit_expense_screen.dart';
 import 'package:expensemate/features/expenses_management/screens/expenses_screen.dart';
 import 'package:expensemate/features/category/screens/categories_screen.dart';
-import 'package:expensemate/features/user/screens/simple_profile_screen.dart';
-import 'package:expensemate/features/user/screens/edit_profile_screen.dart';
-import 'package:expensemate/features/user/screens/profile_screen.dart';
-import 'package:expensemate/features/user/screens/simple_login_screen.dart';
 import 'package:expensemate/features/widgets/main_layout.dart';
 import 'package:flutter/material.dart';
 
@@ -26,13 +22,6 @@ class AppRoutes {
   static const String expensesNew = '/expensesNew';
   static const String addExpense = '/addExpense';
   static const String categories = '/categories';
-  static const String profile = '/profile';
-  static const String profileNew = '/profileNew';
-  static const String editProfile = '/editProfile';
-  static const String userSettings = '/userSettings';
-  static const String userStatistics = '/userStatistics';
-  static const String login = '/login';
-  static const String register = '/register';
 
   // Route generator
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -55,14 +44,6 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const AddEditExpenseScreen());
       case categories:
         return MaterialPageRoute(builder: (_) => CategoriesScreen());
-      case profile:
-        return MaterialPageRoute(builder: (_) => const SimpleProfileScreen());
-      case profileNew:
-        return MaterialPageRoute(builder: (_) => ProfileScreen());
-      case editProfile:
-        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
-      case login:
-        return MaterialPageRoute(builder: (_) => const SimpleLoginScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

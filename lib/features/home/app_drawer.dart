@@ -94,16 +94,6 @@ class AppDrawer extends StatelessWidget {
           Divider(color: Colors.grey[300], thickness: 1),
           _buildDrawerItem(
             context,
-            icon: Icons.account_circle,
-            title: 'Profile',
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, AppRoutes.profile);
-            },
-            color: const Color(0xFF455A64),
-          ),
-          _buildDrawerItem(
-            context,
             icon: Icons.settings,
             title: 'Settings',
             onTap: () {},

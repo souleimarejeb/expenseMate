@@ -118,6 +118,7 @@ class ExpenseCard extends StatelessWidget {
               
               // Amount and Actions
               Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
@@ -128,7 +129,7 @@ class ExpenseCard extends StatelessWidget {
                       color: Colors.red[600],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -136,11 +137,11 @@ class ExpenseCard extends StatelessWidget {
                         IconButton(
                           onPressed: onEdit,
                           icon: const Icon(Icons.edit),
-                          iconSize: 18,
+                          iconSize: 16,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(
-                            minWidth: 32,
-                            minHeight: 32,
+                            minWidth: 28,
+                            minHeight: 28,
                           ),
                           color: Colors.blue[600],
                         ),
@@ -148,11 +149,11 @@ class ExpenseCard extends StatelessWidget {
                         IconButton(
                           onPressed: onDelete,
                           icon: const Icon(Icons.delete),
-                          iconSize: 18,
+                          iconSize: 16,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(
-                            minWidth: 32,
-                            minHeight: 32,
+                            minWidth: 28,
+                            minHeight: 28,
                           ),
                           color: Colors.red[600],
                         ),

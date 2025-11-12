@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../core/models/expense.dart';
 import '../providers/expense_analytics_provider.dart';
+import '../providers/category_provider.dart';
 
 class AddEditExpenseScreen extends StatefulWidget {
   final Expense? expense;
@@ -31,9 +32,9 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
     _initializeFields();
     // Initialize provider data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<ExpenseAnalyticsProvider>();
-      if (provider.categories.isEmpty) {
-        provider.loadData();
+      final categoryProvider = context.read<CategoryProvider>();
+      if (categoryProvider.categories.isEmpty) {
+        categoryProvider.loadCategories();
       }
     });
   }
@@ -237,28 +238,87 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
   }
 
   Widget _buildCategorySelector() {
-    return Consumer<ExpenseAnalyticsProvider>(
+    return Consumer<CategoryProvider>(
       builder: (context, provider, child) {
+        final categories = provider.getActiveCategories();
+        
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Category',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Category',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                if (categories.isEmpty)
+                  TextButton.icon(
+                    onPressed: () {
+                      // Navigate to categories screen
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Go to Categories tab to add categories'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Add Category'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.purple,
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 12),
-            Container(
-              height: 100,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: provider.categories.length,
-                itemBuilder: (context, index) {
-                  final category = provider.categories[index];
-                  final isSelected = _selectedCategoryId == category.id;
+            categories.isEmpty
+                ? Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          Icon(Icons.category_outlined, 
+                            size: 40, 
+                            color: Colors.grey[400]
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'No categories available',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Add categories from the Categories tab',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : Container(
+                    height: 100,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: categories.length,
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        final isSelected = _selectedCategoryId == category.id;
                   
                   return GestureDetector(
                     onTap: () => setState(() => _selectedCategoryId = category.id),
@@ -308,7 +368,7 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
                 },
               ),
             ),
-            if (_selectedCategoryId == null)
+            if (_selectedCategoryId == null && categories.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
@@ -477,6 +537,19 @@ class _AddEditExpenseScreenState extends State<AddEditExpenseScreen> {
 
   void _saveExpense() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    // Check if categories exist
+    final categoryProvider = context.read<CategoryProvider>();
+    if (categoryProvider.categories.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add at least one category first'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    
     if (_selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a category')),

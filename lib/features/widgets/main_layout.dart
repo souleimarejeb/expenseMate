@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:expensemate/features/home/home_page.dart';
 import 'package:expensemate/features/budget/screens/budget_tracking_screen.dart';
 import 'package:expensemate/features/expenses_management/screens/expenses_screen.dart';
+import 'package:expensemate/features/expenses_management/screens/category_management_screen.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({Key? key}) : super(key: key);
@@ -17,8 +18,7 @@ class _MainLayoutState extends State<MainLayout> {
     HomePage(),
     const BudgetTrackingScreen(),
     const ExpensesScreen(), // Expenses Screen with full CRUD functionality
-    Placeholder(), // Categories Screen placeholder  
-    Placeholder(), // Profile Screen placeholder
+    const CategoryManagementScreen(), // Categories Screen  
   ];
 
   void _onItemTapped(int index) {
@@ -64,11 +64,6 @@ class _MainLayoutState extends State<MainLayout> {
             icon: Icon(Icons.category_outlined),
             activeIcon: Icon(Icons.category),
             label: 'Categories',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
           ),
         ],
       ),

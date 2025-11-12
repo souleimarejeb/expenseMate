@@ -527,4 +527,86 @@ class ExpenseAnalyticsProvider extends ChangeNotifier {
       'isIncrease': currentTotal > previousTotal,
     };
   }
+
+  // Get highest expense amount
+  double getHighestExpense() {
+    if (_allExpenses.isEmpty) return 0.0;
+    return _allExpenses.map((e) => e.amount).reduce((a, b) => a > b ? a : b);
+  }
+
+  // Get lowest expense amount
+  double getLowestExpense() {
+    if (_allExpenses.isEmpty) return 0.0;
+    return _allExpenses.map((e) => e.amount).reduce((a, b) => a < b ? a : b);
+  }
+
+  // Get this week's expenses
+  List<Expense> getThisWeekExpenses() {
+    final now = DateTime.now();
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final endOfWeek = startOfWeek.add(const Duration(days: 6));
+    
+    return _allExpenses.where((expense) =>
+      expense.date.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
+      expense.date.isBefore(endOfWeek.add(const Duration(days: 1)))
+    ).toList();
+  }
+
+  // Get this week's total
+  double getThisWeekTotal() {
+    return getThisWeekExpenses().fold(0.0, (sum, expense) => sum + expense.amount);
+  }
+
+  // Get this month's total
+  double getThisMonthTotal() {
+    final thisMonthExpenses = getMonthlyExpenses(DateTime.now());
+    return thisMonthExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
+  }
+
+  // Get daily average for current month
+  double getDailyAverage() {
+    final now = DateTime.now();
+    final monthExpenses = getMonthlyExpenses(now);
+    if (monthExpenses.isEmpty) return 0.0;
+    
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final total = monthExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
+    return total / daysInMonth;
+  }
+
+  // Get top spending category
+  Map<String, dynamic> getTopSpendingCategory() {
+    final categorySpending = getSpendingByCategory();
+    if (categorySpending.isEmpty) {
+      return {'categoryId': 'None', 'amount': 0.0};
+    }
+    
+    var topEntry = categorySpending.entries.first;
+    for (var entry in categorySpending.entries) {
+      if (entry.value > topEntry.value) {
+        topEntry = entry;
+      }
+    }
+    
+    final category = getCategoryById(topEntry.key);
+    return {
+      'categoryId': category?.name ?? topEntry.key,
+      'amount': topEntry.value,
+    };
+  }
+
+  // Get monthly percent change
+  double getMonthlyPercentChange() {
+    final now = DateTime.now();
+    final thisMonth = DateTime(now.year, now.month, 1);
+    final lastMonth = DateTime(now.year, now.month - 1, 1);
+    
+    final thisMonthTotal = getMonthlyExpenses(thisMonth)
+        .fold(0.0, (sum, expense) => sum + expense.amount);
+    final lastMonthTotal = getMonthlyExpenses(lastMonth)
+        .fold(0.0, (sum, expense) => sum + expense.amount);
+    
+    if (lastMonthTotal == 0) return 0.0;
+    return ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100;
+  }
 }

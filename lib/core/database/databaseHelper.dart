@@ -34,10 +34,6 @@ class DatabaseHelper {
       case 'expense_categories':
         final category = ExpenseCategory.fromMap(values);
         return await _sqlite.insertCategory(category);
-      case 'users':
-        return await _sqlite.insertUser(values);
-      case 'user_preferences':
-        return await _sqlite.insertUserPreferences(values);
       case 'expense_attachments':
         return await db.insert(table, values);
       case 'recurring_expenses':
