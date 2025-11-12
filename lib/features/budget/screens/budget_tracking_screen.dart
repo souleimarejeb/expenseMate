@@ -9,7 +9,6 @@ import '../providers/budget_tracking_provider.dart';
 import '../widgets/monthly_spending_chart.dart';
 import '../widgets/budget_comparison_chart.dart';
 import '../widgets/category_breakdown_card.dart';
-import '../widgets/quick_add_expense_sheet.dart';
 import '../widgets/expense_filter_widget.dart';
 
 class BudgetTrackingScreen extends StatefulWidget {
@@ -75,13 +74,6 @@ class _BudgetTrackingScreenState extends State<BudgetTrackingScreen>
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showQuickAddExpense(context),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Expense'),
-      ),
     );
   }
 
@@ -89,6 +81,7 @@ class _BudgetTrackingScreenState extends State<BudgetTrackingScreen>
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
+      automaticallyImplyLeading: false,
       title: const Text(
         'Budget Tracking',
         style: TextStyle(
@@ -98,30 +91,33 @@ class _BudgetTrackingScreenState extends State<BudgetTrackingScreen>
         ),
       ),
       centerTitle: true,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.filter_list, color: Colors.black87),
-          onPressed: () => _showFilterSheet(context),
-        ),
-        IconButton(
-          icon: const Icon(Icons.more_vert, color: Colors.black87),
-          onPressed: () => _showMoreOptions(context),
-        ),
-      ],
       bottom: TabBar(
         controller: _tabController,
-        labelColor: Colors.black,
+        labelColor: Colors.blue,
         unselectedLabelColor: Colors.grey,
-        indicatorColor: Colors.black,
+        indicatorColor: Colors.blue,
+        indicatorWeight: 3,
         labelStyle: const TextStyle(
           fontWeight: FontWeight.w600,
-          fontSize: 14,
+          fontSize: 13,
         ),
         tabs: const [
-          Tab(text: 'Overview'),
-          Tab(text: 'Analytics'),
-          Tab(text: 'Compare'),
-          Tab(text: 'Expenses'),
+          Tab(
+            icon: Icon(Icons.dashboard_outlined, size: 20),
+            text: 'Overview',
+          ),
+          Tab(
+            icon: Icon(Icons.bar_chart, size: 20),
+            text: 'Analytics',
+          ),
+          Tab(
+            icon: Icon(Icons.compare_arrows, size: 20),
+            text: 'Compare',
+          ),
+          Tab(
+            icon: Icon(Icons.receipt_long, size: 20),
+            text: 'Expenses',
+          ),
         ],
       ),
     );
@@ -684,91 +680,5 @@ class _BudgetTrackingScreenState extends State<BudgetTrackingScreen>
       );
     });
     context.read<BudgetTrackingProvider>().loadMonthlyData(selectedMonth);
-  }
-
-  void _showQuickAddExpense(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => QuickAddExpenseSheet(
-        onExpenseAdded: () {
-          context.read<BudgetTrackingProvider>().loadMonthlyData(selectedMonth);
-        },
-      ),
-    );
-  }
-
-  void _showFilterSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Filter Options',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Add filter options here
-            const Text('Filter options coming soon...'),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showMoreOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.download),
-              title: const Text('Export Data'),
-              onTap: () {
-                Navigator.pop(context);
-                // Implement export functionality
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-                // Navigate to settings
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.help),
-              title: const Text('Help'),
-              onTap: () {
-                Navigator.pop(context);
-                // Navigate to help
-              },
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
