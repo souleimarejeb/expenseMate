@@ -1,11 +1,12 @@
-import 'local_storage_helper.dart';
+import 'package:sqflite/sqflite.dart';
+import 'sqlite_database_helper.dart';
 import '../models/expense.dart';
 import '../models/expense_category.dart';
 import '../models/expense_attachment.dart';
 
 class DatabaseHelper {
   static DatabaseHelper? _instance;
-  static LocalStorageHelper get _localStorage => LocalStorageHelper.instance;
+  static SQLiteDatabaseHelper get _sqlite => SQLiteDatabaseHelper.instance;
 
   DatabaseHelper._internal();
 
@@ -14,42 +15,35 @@ class DatabaseHelper {
     return _instance!;
   }
 
-  // For compatibility - returns the LocalStorageHelper instance
-  LocalStorageHelper get database => _localStorage;
+  // For compatibility - returns the database instance
+  Future<Database> get database async => await _sqlite.database;
 
   // Initialize method for compatibility
   Future<void> initDatabase() async {
-    await _localStorage.initialize();
+    await _sqlite.database; // Initialize SQLite database
   }
 
-  // Local storage methods for compatibility
+  // Database methods for compatibility
   Future<int> insert(String table, Map<String, dynamic> values) async {
-    // Ensure initialization before any operation
-    await initDatabase();
+    final db = await database;
     
     switch (table) {
       case 'expenses':
         final expense = Expense.fromMap(values);
-        await _localStorage.insertExpense(expense);
-        return 1;
+        return await _sqlite.insertExpense(expense);
       case 'expense_categories':
         final category = ExpenseCategory.fromMap(values);
-        await _localStorage.insertCategory(category);
-        return 1;
+        return await _sqlite.insertCategory(category);
       case 'users':
-        // Store user data in local storage
-        await _localStorage.insertUser(values);
-        return values['id'] ?? 1;
+        return await _sqlite.insertUser(values);
       case 'user_preferences':
-        // Store user preferences in local storage
-        await _localStorage.insertUserPreferences(values);
-        return 1;
+        return await _sqlite.insertUserPreferences(values);
+      case 'expense_attachments':
+        return await db.insert(table, values);
       case 'recurring_expenses':
-      case 'expense_learning':
-        // For unsupported tables, just return success
-        return 1;
+        return await db.insert(table, values);
       default:
-        return 0;
+        return await db.insert(table, values);
     }
   }
 
@@ -64,130 +58,99 @@ class DatabaseHelper {
     int? limit,
     int? offset,
   }) async {
-    // Ensure initialization before any operation
-    await initDatabase();
-    
-    switch (table) {
-      case 'expenses':
-        final expenses = await _localStorage.getExpenses();
-        return expenses.map((e) => e.toMap()).toList();
-      case 'expense_categories':
-        final categories = await _localStorage.getCategories();
-        return categories.map((c) => c.toMap()).toList();
-      case 'users':
-        final users = await _localStorage.getUsers();
-        List<Map<String, dynamic>> result = users;
-        
-        // Apply where clause filtering if provided
-        if (where != null && whereArgs != null) {
-          if (where.contains('email = ?')) {
-            final email = whereArgs[0] as String;
-            result = users.where((user) => user['email'] == email).toList();
-          } else if (where.contains('id = ?')) {
-            final id = whereArgs[0] as int;
-            result = users.where((user) => user['id'] == id).toList();
-          }
-        }
-        
-        return result;
-      case 'user_preferences':
-        final preferences = await _localStorage.getUserPreferences();
-        return preferences;
-      default:
-        return [];
-    }
+    final db = await database;
+    return await db.query(
+      table,
+      distinct: distinct,
+      columns: columns,
+      where: where,
+      whereArgs: whereArgs,
+      groupBy: groupBy,
+      having: having,
+      orderBy: orderBy,
+      limit: limit,
+      offset: offset,
+    );
   }
 
   Future<int> update(String table, Map<String, dynamic> values, {
     String? where,
     List<Object?>? whereArgs,
   }) async {
-    // Ensure initialization before any operation
-    await initDatabase();
-    
-    switch (table) {
-      case 'expenses':
-        final expense = Expense.fromMap(values);
-        await _localStorage.updateExpense(expense);
-        return 1;
-      case 'users':
-        await _localStorage.updateUser(values);
-        return 1;
-      case 'user_preferences':
-        await _localStorage.insertUserPreferences(values); // Update by inserting
-        return 1;
-      default:
-        return 0;
-    }
+    final db = await database;
+    return await db.update(
+      table,
+      values,
+      where: where,
+      whereArgs: whereArgs,
+    );
   }
 
   Future<int> delete(String table, {
     String? where,
     List<Object?>? whereArgs,
   }) async {
-    if (table == 'expenses') {
-      if (where != null && whereArgs != null && whereArgs.isNotEmpty) {
-        // Assuming the where clause is for id
-        await _localStorage.deleteExpense(whereArgs[0].toString());
-        return 1;
-      } else {
-        // Clear all expenses - need to delete one by one since there's no clearAll method
-        final expenses = await _localStorage.getExpenses();
-        for (final expense in expenses) {
-          await _localStorage.deleteExpense(expense.id!);
-        }
-        return expenses.length;
-      }
-    }
-    return 0;
+    final db = await database;
+    return await db.delete(
+      table,
+      where: where,
+      whereArgs: whereArgs,
+    );
   }
 
   Future<void> execute(String sql, [List<Object?>? arguments]) async {
-    // For compatibility with SQL execute commands
-    // Most of these are table creation or index creation which we don't need for SharedPreferences
-    print('SQL execute called (ignored in SharedPreferences): $sql');
+    final db = await database;
+    await db.execute(sql, arguments);
   }
 
   // Delegate methods from original DatabaseHelper
   Future<List<Map<String, dynamic>>> getAllExpenses() async {
-    final expenses = await _localStorage.getExpenses();
+    final expenses = await _sqlite.getExpenses();
     return expenses.map((e) => e.toMap()).toList();
   }
 
   Future<void> addExpense(Map<String, dynamic> expense) async {
     final expenseObj = Expense.fromMap(expense);
-    await _localStorage.insertExpense(expenseObj);
+    await _sqlite.insertExpense(expenseObj);
   }
 
   Future<void> updateExpense(Map<String, dynamic> expense) async {
     final expenseObj = Expense.fromMap(expense);
-    await _localStorage.updateExpense(expenseObj);
+    await _sqlite.updateExpense(expenseObj);
   }
 
   Future<void> deleteExpense(String id) async {
-    await _localStorage.deleteExpense(id);
+    await _sqlite.deleteExpense(id);
   }
 
   Future<List<Map<String, dynamic>>> getAllCategories() async {
-    final categories = await _localStorage.getCategories();
+    final categories = await _sqlite.getCategories();
     return categories.map((c) => c.toMap()).toList();
   }
 
   Future<void> addCategory(Map<String, dynamic> category) async {
     final categoryObj = ExpenseCategory.fromMap(category);
-    await _localStorage.insertCategory(categoryObj);
+    await _sqlite.insertCategory(categoryObj);
   }
 
   Future<List<Map<String, dynamic>>> searchExpenses(String query) async {
-    final expenses = await _localStorage.searchExpenses(query);
-    return expenses.map((e) => e.toMap()).toList();
+    final db = await database;
+    final results = await db.query(
+      'expenses',
+      where: 'description LIKE ? OR notes LIKE ?',
+      whereArgs: ['%$query%', '%$query%'],
+    );
+    return results;
   }
 
   Future<Map<String, dynamic>> getAnalytics() async {
-    // Build analytics from LocalStorage data
-    final expenses = await _localStorage.getExpenses();
-    final totalSpending = await _localStorage.getTotalSpending();
-    final spendingByCategory = await _localStorage.getSpendingByCategory();
+    final expenses = await _sqlite.getExpenses();
+    final spendingByCategory = await _sqlite.getExpensesByCategory();
+    
+    double totalSpending = 0;
+    for (var expense in expenses) {
+      totalSpending += expense.amount;
+    }
     
     return {
       'totalExpenses': expenses.length,
@@ -197,46 +160,56 @@ class DatabaseHelper {
   }
 
   Future<List<Map<String, dynamic>>> getExpensesByDateRange(DateTime start, DateTime end) async {
-    final expenses = await _localStorage.getExpensesByDateRange(start, end);
-    return expenses.map((e) => e.toMap()).toList();
+    final db = await database;
+    final results = await db.query(
+      'expenses',
+      where: 'date BETWEEN ? AND ?',
+      whereArgs: [start.toIso8601String(), end.toIso8601String()],
+      orderBy: 'date DESC',
+    );
+    return results;
   }
 
   Future<List<Map<String, dynamic>>> getExpensesByCategory(String categoryId) async {
-    final expenses = await _localStorage.getExpensesByCategory(categoryId);
-    return expenses.map((e) => e.toMap()).toList();
+    final db = await database;
+    final results = await db.query(
+      'expenses',
+      where: 'category_id = ?',
+      whereArgs: [categoryId],
+      orderBy: 'date DESC',
+    );
+    return results;
   }
 
   // Attachment methods
   Future<String> insertExpenseAttachment(Map<String, dynamic> attachment) async {
-    // For simplified version, just return a generated ID
-    return 'attachment_${DateTime.now().millisecondsSinceEpoch}';
+    final attachmentObj = ExpenseAttachment.fromMap(attachment);
+    await _sqlite.insertAttachment(attachmentObj);
+    return attachmentObj.id!;
   }
 
   Future<List<Map<String, dynamic>>> getExpenseAttachments(String expenseId) async {
-    // For simplified version, return empty list
-    return [];
+    final attachments = await _sqlite.getAttachmentsByExpenseId(expenseId);
+    return attachments.map((a) => a.toMap()).toList();
   }
 
   Future<List<Map<String, dynamic>>> getAllExpenseAttachments() async {
-    // For simplified version, return empty list
-    return [];
+    final db = await database;
+    return await db.query('expense_attachments');
   }
 
   Future<int> deleteExpenseAttachment(String attachmentId) async {
-    // For simplified version, always return success
-    return 1;
+    return await _sqlite.deleteAttachment(attachmentId);
   }
 
   // Raw query support for legacy code
   Future<List<Map<String, dynamic>>> rawQuery(String sql, [List<Object?>? arguments]) async {
-    // For compatibility, we'll try to handle some basic queries
-    if (sql.contains('SELECT * FROM expenses')) {
-      return await getAllExpenses();
-    } else if (sql.contains('SELECT * FROM expense_categories')) {
-      return await getAllCategories();
-    }
-    
-    // For unsupported queries, return empty list
-    return [];
+    final db = await database;
+    return await db.rawQuery(sql, arguments);
+  }
+
+  // Close database
+  Future<void> close() async {
+    await _sqlite.close();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:expensemate/features/home/home_page.dart';
 import 'package:expensemate/features/budget/screens/budget_tracking_screen.dart';
+import 'package:expensemate/features/expenses_management/screens/expenses_screen.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({Key? key}) : super(key: key);
@@ -15,7 +16,7 @@ class _MainLayoutState extends State<MainLayout> {
   final List<Widget> _pages = [
     HomePage(),
     const BudgetTrackingScreen(),
-    Placeholder(), // Enhanced Expenses Screen placeholder
+    const ExpensesScreen(), // Expenses Screen with full CRUD functionality
     Placeholder(), // Categories Screen placeholder  
     Placeholder(), // Profile Screen placeholder
   ];

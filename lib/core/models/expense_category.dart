@@ -28,32 +28,44 @@ class ExpenseCategory {
     return {
       'id': id,
       'name': name,
-      'description': description,
-      'iconCodePoint': icon.codePoint,
-      'iconFontFamily': icon.fontFamily,
-      'colorValue': color.value,
-      'parentCategoryId': parentCategoryId,
-      'isActive': isActive ? 1 : 0,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'icon': String.fromCharCode(icon.codePoint), // Store as emoji character
+      'color': color.value,
+      'is_default': isActive ? 1 : 0,
+      'created_at': createdAt.toIso8601String(),
     };
   }
 
   // Create from Map
   factory ExpenseCategory.fromMap(Map<String, dynamic> map) {
+    // Handle both old and new schema
+    IconData iconData;
+    if (map.containsKey('icon') && map['icon'] is String) {
+      // New schema: icon as emoji string
+      final String iconStr = map['icon'] ?? '📌';
+      iconData = IconData(
+        iconStr.isNotEmpty ? iconStr.codeUnitAt(0) : Icons.category.codePoint,
+        fontFamily: 'MaterialIcons',
+      );
+    } else if (map.containsKey('iconCodePoint')) {
+      // Old schema: icon as IconData
+      iconData = IconData(
+        map['iconCodePoint'] ?? Icons.category.codePoint,
+        fontFamily: map['iconFontFamily'],
+      );
+    } else {
+      iconData = Icons.category;
+    }
+    
     return ExpenseCategory(
       id: map['id'],
       name: map['name'] ?? '',
       description: map['description'] ?? '',
-      icon: IconData(
-        map['iconCodePoint'] ?? Icons.category.codePoint,
-        fontFamily: map['iconFontFamily'],
-      ),
-      color: Color(map['colorValue'] ?? Colors.blue.value),
+      icon: iconData,
+      color: Color(map['color'] ?? map['colorValue'] ?? Colors.blue.value),
       parentCategoryId: map['parentCategoryId'],
-      isActive: (map['isActive'] ?? 1) == 1,
-      createdAt: DateTime.parse(map['createdAt']),
-      updatedAt: DateTime.parse(map['updatedAt']),
+      isActive: (map['is_default'] ?? map['isActive'] ?? 1) == 1,
+      createdAt: DateTime.parse(map['created_at'] ?? map['createdAt'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(map['updated_at'] ?? map['updatedAt'] ?? DateTime.now().toIso8601String()),
     );
   }
 

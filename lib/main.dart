@@ -2,14 +2,12 @@ import 'package:expensemate/routes/app_routes.dart';
 import 'package:expensemate/features/expenses_management/providers/expense_provider.dart';
 import 'package:expensemate/features/expenses_management/providers/expense_analytics_provider.dart';
 import 'package:expensemate/features/budget/providers/budget_tracking_provider.dart';
-import 'package:expensemate/features/user/providers/user_provider.dart';
-import 'package:expensemate/features/user/providers/user_preferences_provider.dart';
 import 'package:expensemate/features/widgets/main_layout.dart';
-import 'package:expensemate/features/user/screens/simple_login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -24,8 +22,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ExpenseProvider()),
         ChangeNotifierProvider(create: (_) => ExpenseAnalyticsProvider()),
         ChangeNotifierProvider(create: (_) => BudgetTrackingProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => UserPreferencesProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -72,15 +68,7 @@ class MyApp extends StatelessWidget {
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
         ),
-        home: Consumer<UserProvider>(
-          builder: (context, userProvider, child) {
-            if (userProvider.isAuthenticated) {
-              return MainLayout();
-            } else {
-              return const SimpleLoginScreen();
-            }
-          },
-        ),
+        home: MainLayout(),
         onGenerateRoute: AppRoutes.generateRoute,
       ),
     );
