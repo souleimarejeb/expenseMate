@@ -26,7 +26,7 @@ class DatabaseHelper {
     // Open/create the database
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDb,
       onUpgrade: _onUpgrade,
     );
@@ -56,7 +56,7 @@ class DatabaseHelper {
 
     await db.execute('''
     CREATE TABLE budgets(
-      id TEXT PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       limit_amount REAL NOT NULL,
       spent_amount REAL NOT NULL,
       status TEXT NOT NULL,

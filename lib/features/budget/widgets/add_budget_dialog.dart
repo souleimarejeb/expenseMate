@@ -62,7 +62,7 @@ class _AddBudgetDialogState extends State<AddBudgetDialog> {
 
       // Create the budget object for callback
       final newBudget = Budget(
-        id: budgetId.toString(), // Convert the returned ID to string
+        id: budgetId, // Convert the returned ID to string
         limitAmount: double.parse(_limitController.text),
         spentAmount: 0, // Start with 0 spent
         status: BudgetStatus.ok,

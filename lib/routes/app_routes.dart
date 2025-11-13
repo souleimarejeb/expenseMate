@@ -1,6 +1,7 @@
 
+import 'package:expensemate/features/budget/screens/all_budgets_page.dart';
 import 'package:expensemate/features/budget/screens/create_budget.dart';
-import 'package:expensemate/features/budget/screens/budget_list.dart';
+
 import 'package:expensemate/features/home/screens/home_page.dart';
 import 'package:expensemate/features/user/screens/profile_screen.dart';
 import 'package:expensemate/features/user/screens/sign_in_screen.dart';

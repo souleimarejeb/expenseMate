@@ -1,7 +1,7 @@
 import 'budget_status.dart'; 
 
 class Budget {
-  final String? id;          
+  final int? id;
   final double limitAmount;   
   final double spentAmount;   
   final BudgetStatus status;  
@@ -27,7 +27,7 @@ class Budget {
       limitAmount <= 0 ? 0.0 : (spentAmount / limitAmount) * 100.0;
 
   Budget copyWith({
-    String? id,
+    int? id,
     double? limitAmount,
     double? spentAmount,
     BudgetStatus? status,
@@ -78,7 +78,7 @@ class Budget {
     }
 
     return Budget(
-      id: json['id'] as String?,
+      id: json['id'] as int?,
       limitAmount: parseDouble(json['limit_amount'] ?? json['limitAmount']),
       spentAmount: parseDouble(json['spent_amount'] ?? json['spentAmount']),
       status: parseStatus(json['status'] as String?),
