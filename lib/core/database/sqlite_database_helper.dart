@@ -26,7 +26,7 @@ class SQLiteDatabaseHelper {
     
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -115,11 +115,29 @@ class SQLiteDatabaseHelper {
       )
     ''');
 
+    // Create Budgets table
+    await db.execute('''
+      CREATE TABLE budgets (
+        id TEXT PRIMARY KEY,
+        limit_amount REAL NOT NULL,
+        spent_amount REAL DEFAULT 0.0,
+        status TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        month INTEGER NOT NULL,
+        year INTEGER NOT NULL,
+        category TEXT,
+        FOREIGN KEY (category) REFERENCES expense_categories (id) ON DELETE SET NULL
+      )
+    ''');
+
     // Create indexes for better query performance
     await db.execute('CREATE INDEX idx_expenses_category_id ON expenses(category_id)');
     await db.execute('CREATE INDEX idx_expenses_date ON expenses(date)');
     await db.execute('CREATE INDEX idx_attachments_expense_id ON expense_attachments(expense_id)');
     await db.execute('CREATE INDEX idx_users_email ON users(email)');
+    await db.execute('CREATE INDEX idx_budgets_month_year ON budgets(month, year)');
+    await db.execute('CREATE INDEX idx_budgets_category ON budgets(category)');
     
     // Insert default categories
     await _insertDefaultCategories(db);
@@ -174,6 +192,31 @@ class SQLiteDatabaseHelper {
           )
         ''');
         await db.execute('CREATE INDEX idx_users_email ON users(email)');
+      }
+    }
+    if (oldVersion < 5) {
+      // Add budgets table
+      var budgetsTableExists = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='budgets'"
+      );
+      
+      if (budgetsTableExists.isEmpty) {
+        await db.execute('''
+          CREATE TABLE budgets (
+            id TEXT PRIMARY KEY,
+            limit_amount REAL NOT NULL,
+            spent_amount REAL DEFAULT 0.0,
+            status TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            month INTEGER NOT NULL,
+            year INTEGER NOT NULL,
+            category TEXT,
+            FOREIGN KEY (category) REFERENCES expense_categories (id) ON DELETE SET NULL
+          )
+        ''');
+        await db.execute('CREATE INDEX idx_budgets_month_year ON budgets(month, year)');
+        await db.execute('CREATE INDEX idx_budgets_category ON budgets(category)');
       }
     }
   }
@@ -426,6 +469,7 @@ class SQLiteDatabaseHelper {
     await db.delete('expense_categories');
     await db.delete('recurring_expenses');
     await db.delete('users');
+    await db.delete('budgets');
     
     // Re-insert default categories
     await _insertDefaultCategories(db);
@@ -495,5 +539,103 @@ class SQLiteDatabaseHelper {
       whereArgs: ['%$query%', '%$query%'],
       orderBy: 'name ASC',
     );
+  }
+
+  // CRUD Operations for Budgets
+  Future<int> insertBudget(Map<String, dynamic> budget) async {
+    final db = await database;
+    return await db.insert('budgets', budget);
+  }
+
+  Future<List<Map<String, dynamic>>> getBudgets() async {
+    final db = await database;
+    return await db.query('budgets', orderBy: 'year DESC, month DESC');
+  }
+
+  Future<Map<String, dynamic>?> getBudgetById(String id) async {
+    final db = await database;
+    final maps = await db.query(
+      'budgets',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    
+    if (maps.isEmpty) return null;
+    return maps.first;
+  }
+
+  Future<List<Map<String, dynamic>>> getBudgetsByMonth(int month, int year) async {
+    final db = await database;
+    return await db.query(
+      'budgets',
+      where: 'month = ? AND year = ?',
+      whereArgs: [month, year],
+    );
+  }
+
+  Future<Map<String, dynamic>?> getBudgetByCategoryAndMonth(
+    String category,
+    int month,
+    int year,
+  ) async {
+    final db = await database;
+    final maps = await db.query(
+      'budgets',
+      where: 'category = ? AND month = ? AND year = ?',
+      whereArgs: [category, month, year],
+      limit: 1,
+    );
+    
+    if (maps.isEmpty) return null;
+    return maps.first;
+  }
+
+  Future<int> updateBudget(String id, Map<String, dynamic> budget) async {
+    final db = await database;
+    return await db.update(
+      'budgets',
+      budget,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> deleteBudget(String id) async {
+    final db = await database;
+    return await db.delete(
+      'budgets',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> deleteBudgetsByMonth(int month, int year) async {
+    final db = await database;
+    return await db.delete(
+      'budgets',
+      where: 'month = ? AND year = ?',
+      whereArgs: [month, year],
+    );
+  }
+
+  Future<double> getTotalBudgetForMonth(int month, int year) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT SUM(limit_amount) as total FROM budgets WHERE month = ? AND year = ?',
+      [month, year],
+    );
+    
+    return result.first['total'] != null ? (result.first['total'] as num).toDouble() : 0.0;
+  }
+
+  Future<double> getTotalSpentForMonth(int month, int year) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT SUM(spent_amount) as total FROM budgets WHERE month = ? AND year = ?',
+      [month, year],
+    );
+    
+    return result.first['total'] != null ? (result.first['total'] as num).toDouble() : 0.0;
   }
 }

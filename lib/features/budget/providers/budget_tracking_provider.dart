@@ -5,6 +5,7 @@ import '../../../core/models/expense_category.dart';
 import '../../../core/models/bugets/budget.dart';
 import '../../../core/models/bugets/budget_status.dart';
 import '../../../core/services/expense_service.dart';
+import '../../../core/services/budget_service.dart';
 
 class MonthlyBudgetData {
   final DateTime month;
@@ -51,6 +52,7 @@ class MonthlyBudgetData {
 
 class BudgetTrackingProvider extends ChangeNotifier {
   final ExpenseService _expenseService = ExpenseService();
+  final BudgetService _budgetService = BudgetService();
   
   bool _isLoading = false;
   String? _error;
@@ -198,6 +200,144 @@ class BudgetTrackingProvider extends ChangeNotifier {
     }
   }
 
+  // Create a new budget
+  Future<Budget> createBudget({
+    required double limitAmount,
+    required int month,
+    required int year,
+    String? category,
+  }) async {
+    try {
+      final budget = await _budgetService.createBudget(
+        limitAmount: limitAmount,
+        month: month,
+        year: year,
+        category: category,
+      );
+      
+      _budgets.add(budget);
+      
+      // Recalculate monthly data
+      final budgetMonth = DateTime(year, month, 1);
+      await _calculateMonthlyData(budgetMonth);
+      
+      notifyListeners();
+      return budget;
+    } catch (e) {
+      _setError('Failed to create budget: $e');
+      rethrow;
+    }
+  }
+
+  // Update budget
+  Future<Budget> updateBudget(Budget budget) async {
+    try {
+      final updatedBudget = await _budgetService.updateBudget(budget);
+      
+      final index = _budgets.indexWhere((b) => b.id == budget.id);
+      if (index != -1) {
+        _budgets[index] = updatedBudget;
+        
+        // Recalculate monthly data
+        final budgetMonth = DateTime(updatedBudget.createdAt.year, updatedBudget.month, 1);
+        await _calculateMonthlyData(budgetMonth);
+        
+        notifyListeners();
+      }
+      
+      return updatedBudget;
+    } catch (e) {
+      _setError('Failed to update budget: $e');
+      rethrow;
+    }
+  }
+
+  // Delete budget
+  Future<void> deleteBudget(String budgetId) async {
+    try {
+      final budget = _budgets.firstWhere((b) => b.id == budgetId);
+      
+      await _budgetService.deleteBudget(budgetId);
+      _budgets.removeWhere((b) => b.id == budgetId);
+      
+      // Recalculate monthly data
+      final budgetMonth = DateTime(budget.createdAt.year, budget.month, 1);
+      await _calculateMonthlyData(budgetMonth);
+      
+      notifyListeners();
+    } catch (e) {
+      _setError('Failed to delete budget: $e');
+    }
+  }
+
+  // Create or update budget for a category
+  Future<Budget> upsertBudget({
+    required double limitAmount,
+    required int month,
+    required int year,
+    String? category,
+  }) async {
+    try {
+      final budget = await _budgetService.upsertBudget(
+        limitAmount: limitAmount,
+        month: month,
+        year: year,
+        category: category,
+      );
+      
+      // Update local list
+      final existingIndex = _budgets.indexWhere(
+        (b) => b.category == category && b.month == month,
+      );
+      
+      if (existingIndex != -1) {
+        _budgets[existingIndex] = budget;
+      } else {
+        _budgets.add(budget);
+      }
+      
+      // Recalculate monthly data
+      final budgetMonth = DateTime(year, month, 1);
+      await _calculateMonthlyData(budgetMonth);
+      
+      notifyListeners();
+      return budget;
+    } catch (e) {
+      _setError('Failed to upsert budget: $e');
+      rethrow;
+    }
+  }
+
+  // Sync budgets with actual spending
+  Future<void> syncBudgetsWithSpending(DateTime month) async {
+    try {
+      final normalizedMonth = DateTime(month.year, month.month, 1);
+      final monthExpenses = getExpensesForMonth(normalizedMonth);
+      
+      // Calculate spending by category
+      final categorySpending = <String, double>{};
+      for (final expense in monthExpenses) {
+        categorySpending[expense.categoryId] = 
+            (categorySpending[expense.categoryId] ?? 0.0) + expense.amount;
+      }
+      
+      // Update budgets with actual spending
+      await _budgetService.recalculateSpentAmounts(
+        normalizedMonth.month,
+        normalizedMonth.year,
+        categorySpending,
+      );
+      
+      // Reload budgets
+      await _loadBudgets();
+      await _calculateMonthlyData(normalizedMonth);
+      
+      notifyListeners();
+    } catch (e) {
+      _setError('Failed to sync budgets: $e');
+    }
+  }
+
   // Get spending comparison data
   Map<String, double> getSpendingComparison(DateTime currentMonth, DateTime previousMonth) {
     final currentData = getMonthlyData(currentMonth);
@@ -264,10 +404,10 @@ class BudgetTrackingProvider extends ChangeNotifier {
 
   Future<void> _loadBudgets() async {
     try {
-      // For now, create some sample budgets
-      _budgets = _getSampleBudgets();
+      _budgets = await _budgetService.getAllBudgets();
     } catch (e) {
-      _budgets = _getSampleBudgets();
+      _budgets = [];
+      throw Exception('Failed to load budgets: $e');
     }
   }
 
@@ -377,61 +517,7 @@ class BudgetTrackingProvider extends ChangeNotifier {
     ];
   }
 
-  List<Budget> _getSampleBudgets() {
-    final now = DateTime.now();
-    return [
-      Budget(
-        id: 'food_budget',
-        limitAmount: 400,
-        spentAmount: 0,
-        status: BudgetStatus.ok,
-        createdAt: now,
-        updatedAt: now,
-        month: now.month,
-        category: 'food',
-      ),
-      Budget(
-        id: 'transport_budget',
-        limitAmount: 200,
-        spentAmount: 0,
-        status: BudgetStatus.ok,
-        createdAt: now,
-        updatedAt: now,
-        month: now.month,
-        category: 'transport',
-      ),
-      Budget(
-        id: 'entertainment_budget',
-        limitAmount: 150,
-        spentAmount: 0,
-        status: BudgetStatus.ok,
-        createdAt: now,
-        updatedAt: now,
-        month: now.month,
-        category: 'entertainment',
-      ),
-      Budget(
-        id: 'bills_budget',
-        limitAmount: 300,
-        spentAmount: 0,
-        status: BudgetStatus.ok,
-        createdAt: now,
-        updatedAt: now,
-        month: now.month,
-        category: 'bills',
-      ),
-      Budget(
-        id: 'shopping_budget',
-        limitAmount: 250,
-        spentAmount: 0,
-        status: BudgetStatus.ok,
-        createdAt: now,
-        updatedAt: now,
-        month: now.month,
-        category: 'shopping',
-      ),
-    ];
-  }
+
 
   void _setLoading(bool loading) {
     _isLoading = loading;
